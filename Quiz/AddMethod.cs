@@ -46,5 +46,19 @@ namespace Quiz
             if (str.Length > length) return str.Substring(0, length) + "…";
             else return str;
         }
+
+        // QuestionにNoをふる
+        public static void MakeNo(this List<Question> qlist)
+        {
+            for (int i = 0; i < qlist.Count; ++i) qlist[i].No = i + 1;
+        }
+
+        // 検索条件の文字列をフォーマット
+        public static string FormatForSearch(this string str)
+        {
+            str = str.Trim().Replace('　', ' ').Replace('\n', ' ').Replace('\r', ' ');
+            str = Regex.Replace(str, " [ ]+", " ");
+            return str;
+        }
     }
 }

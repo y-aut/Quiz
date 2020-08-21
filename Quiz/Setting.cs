@@ -14,13 +14,14 @@ namespace Quiz
     {
         public enum DataType
         {
-            QList,                  // QuestionList
+            QList,                  // List<Question>
             RowHeader_Width,        // int
             ClmStatement_Width,     // int
             ClmAnswer_Width,        // int
             ClmRuby_Width,          // int
             ClmRate_Width,          // int
             ClmLearn_Width,         // int
+            ClmFavorite_Width,      // int
             FmMain_Rectangle,       // Rectangle
 
             // Setting
@@ -93,13 +94,14 @@ namespace Quiz
         {
             Datas = new Hashtable
             {
-                { DataType.QList.ToString(), new QuestionList() },
+                { DataType.QList.ToString(), new List<Question>() },
                 { DataType.RowHeader_Width.ToString(), 30 },
                 { DataType.ClmStatement_Width.ToString(), 400 },
                 { DataType.ClmAnswer_Width.ToString(), 200 },
                 { DataType.ClmRuby_Width.ToString(), 200 },
                 { DataType.ClmRate_Width.ToString(), 100 },
                 { DataType.ClmLearn_Width.ToString(), 100 },
+                { DataType.ClmFavorite_Width.ToString(), 50 },
                 { DataType.FmMain_Rectangle.ToString(), new Rectangle(0, 0, 500, 300) },
 
                 { DataType.Encoding.ToString(), new UTF8Encoding() },

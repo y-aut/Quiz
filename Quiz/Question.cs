@@ -10,6 +10,7 @@ namespace Quiz
     [Serializable]
     public class Question
     {
+        public int No { get; set; } = 0;    // 1から
         public string Statement { get; set; }
         public string Answer { get; set; }
         public string Ruby { get; set; }
@@ -17,9 +18,14 @@ namespace Quiz
         public int CorrectCount { get; set; } = 0;
         public int Rate => TrialCount == 0 ? 0 : (int)(CorrectCount * 100.0 / TrialCount);
         public int LearnCount { get; set; } = 0;
+        public bool Favorite { get; set; } = false;
 
         // 問題文、答え、読みに含まれるか
-        public bool Contains(string str) => Statement.Contains(str) || Answer.Contains(str) || Ruby.Contains(str);
+        public bool Contains(string lowStr) {
+            return Statement.ToLower().Contains(lowStr) ||
+                Answer.ToLower().Contains(lowStr) ||
+                Ruby.ToLower().Contains(lowStr);
+        }
 
         public Question()
         {
@@ -33,7 +39,7 @@ namespace Quiz
             Ruby = ruby;
         }
 
-        public Question(string statement, string answer, string ruby, int trial, int correct, int learn)
+        public Question(string statement, string answer, string ruby, int trial, int correct, int learn, bool favorite)
         {
             Statement = statement;
             Answer = answer;
@@ -41,6 +47,7 @@ namespace Quiz
             TrialCount = trial;
             CorrectCount = correct;
             LearnCount = learn;
+            Favorite = favorite;
         }
 
         public bool IsOK => Statement != "" && Answer != "" && Ruby != "";

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -123,6 +124,7 @@ namespace Quiz
             var q = CurrentQ();
             TxbQuestion.Text = q.Question.Statement;
             TxbAnswer.Text = "";
+            TxbAnswer.ContextMenuStrip = null;
             // Update the description
             TxbDesc.Text = (q.Progress == 1 ? "学習中" : "未知　") +
                 $"\t\t{progress_cnt[0]} → {progress_cnt[1]} → {progress_cnt[2]}";
@@ -139,6 +141,7 @@ namespace Quiz
 
         private void BtnShowAnswer_Click(object sender, EventArgs e)
         {
+            TxbAnswer.ContextMenuStrip = CmsAnswer;
             TxbAnswer.Text = CurrentQ().Question.Answer + "\n" + CurrentQ().Question.Ruby;
             TxbAnswer.Select(0, CurrentQ().Question.Answer.Length);
             TxbAnswer.SelectionColor = Color.Red;
@@ -176,6 +179,8 @@ namespace Quiz
 
         private void Control_KeyDown(object sender, KeyEventArgs e)
         {
+            e.SuppressKeyPress = true;
+
             if (BtnCorrect.Visible)
             {
                 if (e.KeyCode == Keys.Y) BtnCorrect_Click(BtnCorrect, e);
@@ -183,19 +188,22 @@ namespace Quiz
             }
             else
             {
-                if (e.KeyCode == Keys.Y || e.KeyCode == Keys.N) BtnShowAnswer_Click(BtnShowAnswer, e);
+                if (e.KeyCode == Keys.Y || e.KeyCode == Keys.N)
+                    BtnShowAnswer_Click(BtnShowAnswer, e);
                 // n文字出現
-                else
-                {
-                    if (Keys.D1 <= e.KeyCode && e.KeyCode <= Keys.D9)
-                        ShowAnswer(e.KeyCode - Keys.D0);
-                }
+                else  if (Keys.D1 <= e.KeyCode && e.KeyCode <= Keys.D9)
+                    ShowAnswer(e.KeyCode - Keys.D0);
             }
         }
 
         private void FmQuiz_FormClosed(object sender, FormClosedEventArgs e)
         {
             Startup.Fm_Main.UpdateList();
+        }
+
+        private void BtnSearchAnswer_Click(object sender, EventArgs e)
+        {
+            Process.Start($"https://www.google.com/search?q={CurrentQ().Question.Answer}");
         }
 
         private void BtnIncorrect_Click(object sender, EventArgs e)

@@ -141,9 +141,9 @@
             this.LblAdd.Font = new System.Drawing.Font("HGSｺﾞｼｯｸM", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.LblAdd.Location = new System.Drawing.Point(13, 343);
             this.LblAdd.Name = "LblAdd";
-            this.LblAdd.Size = new System.Drawing.Size(331, 20);
+            this.LblAdd.Size = new System.Drawing.Size(304, 20);
             this.LblAdd.TabIndex = 8;
-            this.LblAdd.Text = "※ [Ctrl] + [Enter] で続けて追加する";
+            this.LblAdd.Text = "[Ctrl] + [Enter] で続けて追加する";
             // 
             // FmEditQuestion
             // 

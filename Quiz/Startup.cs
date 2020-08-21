@@ -13,6 +13,7 @@ namespace Quiz
         public static FmMain Fm_Main;
         public static FmSetting Fm_Setting;
         public static FmEditQuestion Fm_AddQuestion;   // 編集時はShowDialog
+        public static FmSearch Fm_Search;
 
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
@@ -32,6 +33,7 @@ namespace Quiz
             Fm_Main = new FmMain();
             Fm_Setting = new FmSetting();
             Fm_AddQuestion = new FmEditQuestion(true);
+            Fm_Search = new FmSearch();
         }
 
         public static void LoadSettings()

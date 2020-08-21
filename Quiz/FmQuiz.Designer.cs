@@ -28,12 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.BtnShowAnswer = new System.Windows.Forms.Button();
             this.BtnIncorrect = new System.Windows.Forms.Button();
             this.BtnCorrect = new System.Windows.Forms.Button();
             this.TxbQuestion = new System.Windows.Forms.RichTextBox();
             this.TxbAnswer = new System.Windows.Forms.RichTextBox();
             this.TxbDesc = new System.Windows.Forms.RichTextBox();
+            this.CmsAnswer = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.BtnSearchAnswer = new System.Windows.Forms.ToolStripMenuItem();
+            this.CmsAnswer.SuspendLayout();
             this.SuspendLayout();
             // 
             // BtnShowAnswer
@@ -115,6 +119,21 @@
             this.TxbDesc.Text = "説明";
             this.TxbDesc.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Control_KeyDown);
             // 
+            // CmsAnswer
+            // 
+            this.CmsAnswer.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.CmsAnswer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.BtnSearchAnswer});
+            this.CmsAnswer.Name = "CmsAnswer";
+            this.CmsAnswer.Size = new System.Drawing.Size(188, 36);
+            // 
+            // BtnSearchAnswer
+            // 
+            this.BtnSearchAnswer.Name = "BtnSearchAnswer";
+            this.BtnSearchAnswer.Size = new System.Drawing.Size(240, 32);
+            this.BtnSearchAnswer.Text = "ブラウザで検索";
+            this.BtnSearchAnswer.Click += new System.EventHandler(this.BtnSearchAnswer_Click);
+            // 
             // FmQuiz
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
@@ -130,6 +149,7 @@
             this.Text = "クイズ";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FmQuiz_FormClosed);
             this.Load += new System.EventHandler(this.FmQuiz_Load);
+            this.CmsAnswer.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -141,5 +161,7 @@
         private System.Windows.Forms.RichTextBox TxbQuestion;
         private System.Windows.Forms.RichTextBox TxbAnswer;
         private System.Windows.Forms.RichTextBox TxbDesc;
+        private System.Windows.Forms.ContextMenuStrip CmsAnswer;
+        private System.Windows.Forms.ToolStripMenuItem BtnSearchAnswer;
     }
 }

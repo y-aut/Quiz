@@ -17,7 +17,7 @@ namespace Quiz
         bool flgCancel = true;
         bool flgRubyEditted = false;    // 読みが一度でも変更されたか
         bool flgOnMacro = false;
-        QuestionList answer;    // Editの場合に変更前の問題を入れておく
+        List<Question> answer;    // Editの場合に変更前の問題を入れておく
         int current;            // Editで、編集中の問題のインデックス
 
         private bool IsAdding { get; set; } = false;
@@ -32,7 +32,7 @@ namespace Quiz
             if (isAdd)
             {
                 Text = "問題を追加";
-                answer = new QuestionList();
+                answer = new List<Question>();
                 IsAdding = true;
                 BtnOK.Text = "追加";
             }
@@ -43,7 +43,7 @@ namespace Quiz
             Startup.Fm_AddQuestion.Show();
         }
 
-        public static DialogResult EditShow(QuestionList question)
+        public static DialogResult EditShow(List<Question> question)
         {
             var fm = new FmEditQuestion() {
                 flgRubyEditted = question.First().Ruby != "",
@@ -134,7 +134,7 @@ namespace Quiz
             if (str != TxbAnswer.Text) return;
 
             // 漢字なしなら記号と、括弧内の文字列を抜いたものを入力する
-            const string RemoveChar = @"・！？!?、。,. /\「」『』$-";
+            const string RemoveChar = @"・！？!?、。,. /\￥「」『』$-=＝~～：；:;%％";
             foreach (char c in RemoveChar) str = str.Replace(c.ToString(), "");
             if (str.Contains('(')) str = str.Substring(0, str.IndexOf('('));
             if (str.Contains('（')) str = str.Substring(0, str.IndexOf('（'));
