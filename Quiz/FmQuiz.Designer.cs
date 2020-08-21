@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FmQuiz));
             this.BtnShowAnswer = new System.Windows.Forms.Button();
             this.BtnIncorrect = new System.Windows.Forms.Button();
             this.BtnCorrect = new System.Windows.Forms.Button();
@@ -130,7 +131,7 @@
             // BtnSearchAnswer
             // 
             this.BtnSearchAnswer.Name = "BtnSearchAnswer";
-            this.BtnSearchAnswer.Size = new System.Drawing.Size(240, 32);
+            this.BtnSearchAnswer.Size = new System.Drawing.Size(187, 32);
             this.BtnSearchAnswer.Text = "ブラウザで検索";
             this.BtnSearchAnswer.Click += new System.EventHandler(this.BtnSearchAnswer_Click);
             // 
@@ -145,6 +146,7 @@
             this.Controls.Add(this.BtnCorrect);
             this.Controls.Add(this.BtnIncorrect);
             this.Controls.Add(this.BtnShowAnswer);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FmQuiz";
             this.Text = "クイズ";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FmQuiz_FormClosed);

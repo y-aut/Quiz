@@ -22,8 +22,8 @@ namespace Quiz
                 StreamReader sr = new StreamReader(path, (Encoding)Setting.GetData(Setting.DataType.Encoding));
                 {
                     // 各行がどの項目に対応するか
-                    int[] cor = { -1, -1, -1, -1, -1, -1, -1 };
-                    // cor[0]:問題文, cor[1]:解答, cor[2]:読み, cor[3]:出題回数, cor[4]:正解回数, cor[5]:学習回数, cor[6]:お気に入り
+                    int[] cor = { -1, -1, -1, -1, -1, -1, -1, -1 };
+                    // cor[0]:問題文, cor[1]:解答, cor[2]:読み, cor[3]:出題回数, cor[4]:正解回数, cor[5]:学習回数, cor[6]:学習日時, cor[7]:お気に入り
 
                     // 見出しがあるか
                     bool headExists = false;
@@ -37,11 +37,13 @@ namespace Quiz
                             // 英語でないかつ文字数が10文字以上なら、見出しではない
                             if (lists[i].Length >= 10 && Regex.IsMatch(lists[i], @"^[^A-z]$")) continue;
 
-                            if (Regex.IsMatch(lists[i], @"(出題|質問|挑戦|tr)(数|c)", RegexOptions.IgnoreCase))
+                            if (Regex.IsMatch(lists[i], @"(日|時|date|time)", RegexOptions.IgnoreCase))
+                                cor[6] = i;
+                            else if (Regex.IsMatch(lists[i], @"(出題|質問|挑戦|tr).*(数|co)", RegexOptions.IgnoreCase))
                                 cor[3] = i;
-                            else if (Regex.IsMatch(lists[i], @"(正解|正答|cor|suc).*(数|c)", RegexOptions.IgnoreCase))
+                            else if (Regex.IsMatch(lists[i], @"(正解|正答|cor|suc).*(数|co)", RegexOptions.IgnoreCase))
                                 cor[4] = i;
-                            else if (Regex.IsMatch(lists[i], @"(学習|習得|lea|mas|cle).*(数|c)", RegexOptions.IgnoreCase))
+                            else if (Regex.IsMatch(lists[i], @"(学習|習得|lea|mas|cle).*(数|co)", RegexOptions.IgnoreCase))
                                 cor[5] = i;
                             else if (Regex.IsMatch(lists[i], @"(読み|よみ|ふり|かな|仮名|るび|ルビ|ruby|入力|inp)", RegexOptions.IgnoreCase))
                                 cor[2] = i;
@@ -50,7 +52,7 @@ namespace Quiz
                             else if (Regex.IsMatch(lists[i], @"(問題|sen|q)", RegexOptions.IgnoreCase))
                                 cor[0] = i;
                             else if (Regex.IsMatch(lists[i], @"(お気に|星|fav|star)", RegexOptions.IgnoreCase))
-                                cor[6] = i;
+                                cor[7] = i;
                         }
 
                         if (cor[0] != -1 || cor[1] != -1 || cor[2] != -1)
@@ -112,14 +114,16 @@ namespace Quiz
                             string statement = "", answer = "", ruby = "";
                             int trial = 0, correct = 0, learn = 0;
                             bool favorite = false;
+                            DateTime time = DateTime.MinValue;
                             if (lists.Count > cor[0]) statement = lists[cor[0]];
                             if (lists.Count > cor[1]) answer = lists[cor[1]];
                             if (lists.Count > cor[2]) ruby = lists[cor[2]];
                             if (lists.Count > cor[3]) int.TryParse(lists[cor[3]], out trial);
                             if (lists.Count > cor[4]) int.TryParse(lists[cor[4]], out correct);
                             if (lists.Count > cor[5]) int.TryParse(lists[cor[5]], out learn);
-                            if (lists.Count > cor[6]) bool.TryParse(lists[cor[6]], out favorite);
-                            var q = new Question(statement, answer, ruby, trial, correct, learn, favorite);
+                            if (lists.Count > cor[6]) DateTime.TryParse(lists[cor[6]], out time);
+                            if (lists.Count > cor[7]) bool.TryParse(lists[cor[7]], out favorite);
+                            var q = new Question(statement, answer, ruby, trial, correct, learn, time, favorite);
                             if (!q.IsEmpty) ans.Add(q);
                         }
                     }
@@ -144,10 +148,10 @@ namespace Quiz
                 StreamWriter sw = new StreamWriter(path, false, (Encoding)Setting.GetData(Setting.DataType.Encoding));
                 {
                     // Headline
-                    sw.WriteLine("問題,解答,読み,出題回数,正解回数,学習回数,お気に入り");
+                    sw.WriteLine("問題,解答,読み,出題回数,正解回数,学習回数,最終学習日時,お気に入り");
 
                     foreach (var i in qlist)
-                        sw.WriteLine($"{i.Statement.ToCSV()},{i.Answer.ToCSV()},{i.Ruby.ToCSV()},{i.TrialCount},{i.CorrectCount},{i.LearnCount},{i.Favorite}");
+                        sw.WriteLine($"{i.Statement.ToCSV()},{i.Answer.ToCSV()},{i.Ruby.ToCSV()},{i.TrialCount},{i.CorrectCount},{i.LearnCount},{i.FinalDate},{i.Favorite}");
 
                     sw.Close();
                     sw.Dispose();

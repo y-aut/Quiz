@@ -18,6 +18,7 @@ namespace Quiz
         public int CorrectCount { get; set; } = 0;
         public int Rate => TrialCount == 0 ? 0 : (int)(CorrectCount * 100.0 / TrialCount);
         public int LearnCount { get; set; } = 0;
+        public DateTime FinalDate { get; set; } = DateTime.MinValue;
         public bool Favorite { get; set; } = false;
 
         // 問題文、答え、読みに含まれるか
@@ -39,7 +40,7 @@ namespace Quiz
             Ruby = ruby;
         }
 
-        public Question(string statement, string answer, string ruby, int trial, int correct, int learn, bool favorite)
+        public Question(string statement, string answer, string ruby, int trial, int correct, int learn, DateTime date, bool favorite)
         {
             Statement = statement;
             Answer = answer;
@@ -47,6 +48,7 @@ namespace Quiz
             TrialCount = trial;
             CorrectCount = correct;
             LearnCount = learn;
+            FinalDate = date;
             Favorite = favorite;
         }
 
@@ -54,6 +56,7 @@ namespace Quiz
         public bool IsEmpty => Statement == "" && Answer == "" && Ruby == "";
     }
 
+    [Serializable]
     public class QuestionProg
     {
         public Question Question { get; set; }

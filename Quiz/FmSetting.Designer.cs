@@ -28,14 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FmSetting));
             this.BtnCancel = new System.Windows.Forms.Button();
             this.BtnOK = new System.Windows.Forms.Button();
             this.GrpEncoding = new System.Windows.Forms.GroupBox();
             this.RdbSJIS = new System.Windows.Forms.RadioButton();
             this.RdbUTF_8 = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.RdbImportAdd = new System.Windows.Forms.RadioButton();
             this.RdbImportReplace = new System.Windows.Forms.RadioButton();
+            this.RdbImportAdd = new System.Windows.Forms.RadioButton();
             this.GrpEncoding.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -106,18 +107,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "インポート時の動作";
             // 
-            // RdbImportAdd
-            // 
-            this.RdbImportAdd.AutoSize = true;
-            this.RdbImportAdd.Font = new System.Drawing.Font("游ゴシック", 10F);
-            this.RdbImportAdd.Location = new System.Drawing.Point(25, 35);
-            this.RdbImportAdd.Name = "RdbImportAdd";
-            this.RdbImportAdd.Size = new System.Drawing.Size(77, 30);
-            this.RdbImportAdd.TabIndex = 0;
-            this.RdbImportAdd.TabStop = true;
-            this.RdbImportAdd.Text = "追加";
-            this.RdbImportAdd.UseVisualStyleBackColor = true;
-            // 
             // RdbImportReplace
             // 
             this.RdbImportReplace.AutoSize = true;
@@ -130,6 +119,18 @@
             this.RdbImportReplace.Text = "置き換え";
             this.RdbImportReplace.UseVisualStyleBackColor = true;
             // 
+            // RdbImportAdd
+            // 
+            this.RdbImportAdd.AutoSize = true;
+            this.RdbImportAdd.Font = new System.Drawing.Font("游ゴシック", 10F);
+            this.RdbImportAdd.Location = new System.Drawing.Point(25, 35);
+            this.RdbImportAdd.Name = "RdbImportAdd";
+            this.RdbImportAdd.Size = new System.Drawing.Size(77, 30);
+            this.RdbImportAdd.TabIndex = 0;
+            this.RdbImportAdd.TabStop = true;
+            this.RdbImportAdd.Text = "追加";
+            this.RdbImportAdd.UseVisualStyleBackColor = true;
+            // 
             // FmSetting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
@@ -139,6 +140,7 @@
             this.Controls.Add(this.GrpEncoding);
             this.Controls.Add(this.BtnOK);
             this.Controls.Add(this.BtnCancel);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FmSetting";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "設定";

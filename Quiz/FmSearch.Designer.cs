@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FmSearch));
             this.TxbSearch = new System.Windows.Forms.TextBox();
             this.BtnClose = new System.Windows.Forms.Button();
             this.ChbTopMost = new System.Windows.Forms.CheckBox();
@@ -91,6 +92,7 @@
             this.Controls.Add(this.BtnSearch);
             this.Controls.Add(this.BtnClose);
             this.Controls.Add(this.TxbSearch);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FmSearch";
             this.Text = "検索";
             this.TopMost = true;

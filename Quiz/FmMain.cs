@@ -77,6 +77,13 @@ namespace Quiz
             }
         }
 
+        // FmQuizから再開可能かを設定する
+        public bool Resumable
+        {
+            get => BtnResume.Enabled;
+            set => BtnResume.Enabled = value;
+        }
+
         public FmMain()
         {
             InitializeComponent();
@@ -87,6 +94,8 @@ namespace Quiz
             LblInfo.Text = "";
             // Load settings
             Startup.LoadSettings();
+
+            Resumable = Setting.GetData(Setting.DataType.StudyingList) != null;
 
             questionBindingSource.DataSource = QList;
         }
@@ -114,6 +123,7 @@ namespace Quiz
             ClmRuby.Width = (int)Setting.GetData(Setting.DataType.ClmRuby_Width);
             ClmRate.Width = (int)Setting.GetData(Setting.DataType.ClmRate_Width);
             ClmLearn.Width = (int)Setting.GetData(Setting.DataType.ClmLearn_Width);
+            ClmFinalDate.Width = (int)Setting.GetData(Setting.DataType.ClmFinalDate_Width);
             ClmFavorite.Width = (int)Setting.GetData(Setting.DataType.ClmFavorite_Width);
         }
 
@@ -127,6 +137,7 @@ namespace Quiz
             Setting.SetData(Setting.DataType.ClmRuby_Width, ClmRuby.Width);
             Setting.SetData(Setting.DataType.ClmRate_Width, ClmRate.Width);
             Setting.SetData(Setting.DataType.ClmLearn_Width, ClmLearn.Width);
+            Setting.SetData(Setting.DataType.ClmFinalDate_Width, ClmFinalDate.Width);
             Setting.SetData(Setting.DataType.ClmFavorite_Width, ClmFavorite.Width);
         }
 
@@ -506,7 +517,7 @@ namespace Quiz
                         {
                             buf = buf.Where(i => i.LearnCount == 0);
                         }
-                        else if (Regex.IsMatch(cmd, @"^(no|rate|count)[+-]?$"))
+                        else if (Regex.IsMatch(cmd, @"^(no|rate|count|time)[+-]?$"))
                         {
                             // ソート
                             bool asc = cmd[cmd.Length - 1] != '-';
@@ -518,6 +529,8 @@ namespace Quiz
                                 buf = asc ? buf.OrderBy(i => i.Rate) : buf.OrderByDescending(i => i.Rate);
                             else if (cmd == "count")
                                 buf = asc ? buf.OrderBy(i => i.LearnCount) : buf.OrderByDescending(i => i.LearnCount);
+                            else if (cmd == "time")
+                                buf = asc ? buf.OrderBy(i => i.FinalDate) : buf.OrderByDescending(i => i.FinalDate);
                         }
                         else if (Regex.IsMatch(cmd, @"^[1-9][0-9]*n([+-][1-9][0-9]*)?$"))
                         {
@@ -561,6 +574,20 @@ namespace Quiz
                             var buflist = new List<Question>();
                             foreach (var i in indlist) buflist.Add(buf.ElementAt(i));
                             buf = buflist;
+                        }
+                        else if (Regex.IsMatch(cmd, @"^[0-9]+d$"))
+                        {
+                            // n日以内に学んだものを抽出
+                            int n = int.Parse(cmd.Substring(0, cmd.Length - 1));
+                            DateTime min = DateTime.Today.AddDays(-n).Date;
+                            buf = buf.Where(i => i.FinalDate.Date >= min.Date);
+                        }
+                        else if (Regex.IsMatch(cmd, @"^-[0-9]+d$"))
+                        {
+                            // n日以内に学んでいないものを抽出
+                            int n = int.Parse(cmd.Substring(1, cmd.Length - 2));
+                            DateTime min = DateTime.Today.AddDays(-n).Date;
+                            buf = buf.Where(i => i.FinalDate.Date < min.Date);
                         }
                     }
                     else
@@ -669,6 +696,7 @@ namespace Quiz
                 if (e.ColumnIndex < 0) sort = "No";
                 else if (e.ColumnIndex == ClmRate.Index) sort = "Rate";
                 else if (e.ColumnIndex == ClmLearn.Index) sort = "Count";
+                else if (e.ColumnIndex == ClmFinalDate.Index) sort = "Time";
 
                 if (sort != "")
                 {
@@ -702,6 +730,11 @@ namespace Quiz
             {
                 DeleteInfoText("個の問題が選択されています。");
             }
+        }
+
+        private void BtnResume_Click(object sender, EventArgs e)
+        {
+            FmQuiz.ShowResume();
         }
     }
 }
