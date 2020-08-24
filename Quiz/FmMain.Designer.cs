@@ -31,6 +31,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FmMain));
             this.DgvQuestions = new System.Windows.Forms.DataGridView();
+            this.ClmRate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ClmLearn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ClmFinalDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ClmFavorite = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.MnuFile = new System.Windows.Forms.ToolStripDropDownButton();
             this.BtnSave = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,6 +53,8 @@
             this.BtnStudyIgnorant = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnStudyLowRate = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnStudyFavorite = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.BtnResume = new System.Windows.Forms.ToolStripMenuItem();
             this.MnuEdit = new System.Windows.Forms.ToolStripDropDownButton();
             this.BtnAddQuestion = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnEditQuestion = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,12 +74,7 @@
             this.LblInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.StTimer = new System.Windows.Forms.Timer(this.components);
             this.DeleteTimer = new System.Windows.Forms.Timer(this.components);
-            this.ClmRate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ClmLearn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ClmFinalDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ClmFavorite = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.BtnResume = new System.Windows.Forms.ToolStripMenuItem();
+            this.BtnPaste = new System.Windows.Forms.ToolStripMenuItem();
             this.ClmStatement = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ClmAnswer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ClmRuby = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -112,6 +113,41 @@
             this.DgvQuestions.SelectionChanged += new System.EventHandler(this.DgvQuestions_SelectionChanged);
             this.DgvQuestions.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.DgvQuestions_UserDeletingRow);
             // 
+            // ClmRate
+            // 
+            this.ClmRate.DataPropertyName = "Rate";
+            this.ClmRate.HeaderText = "正解率（％）";
+            this.ClmRate.MinimumWidth = 8;
+            this.ClmRate.Name = "ClmRate";
+            this.ClmRate.ReadOnly = true;
+            this.ClmRate.Width = 150;
+            // 
+            // ClmLearn
+            // 
+            this.ClmLearn.DataPropertyName = "LearnCount";
+            this.ClmLearn.HeaderText = "学習回数";
+            this.ClmLearn.MinimumWidth = 8;
+            this.ClmLearn.Name = "ClmLearn";
+            this.ClmLearn.ReadOnly = true;
+            this.ClmLearn.Width = 150;
+            // 
+            // ClmFinalDate
+            // 
+            this.ClmFinalDate.DataPropertyName = "FinalDate";
+            this.ClmFinalDate.HeaderText = "最終学習日時";
+            this.ClmFinalDate.MinimumWidth = 8;
+            this.ClmFinalDate.Name = "ClmFinalDate";
+            this.ClmFinalDate.ReadOnly = true;
+            this.ClmFinalDate.Width = 150;
+            // 
+            // ClmFavorite
+            // 
+            this.ClmFavorite.DataPropertyName = "Favorite";
+            this.ClmFavorite.HeaderText = "お気に";
+            this.ClmFavorite.MinimumWidth = 8;
+            this.ClmFavorite.Name = "ClmFavorite";
+            this.ClmFavorite.Width = 150;
+            // 
             // toolStrip1
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
@@ -138,6 +174,7 @@
             this.BtnSave,
             this.BtnImport,
             this.BtnExport,
+            this.BtnPaste,
             this.toolStripSeparator2,
             this.BtnClose,
             this.BtnCloseWithoutSaving});
@@ -276,6 +313,18 @@
             this.BtnStudyFavorite.Text = "お気に入りを学習";
             this.BtnStudyFavorite.Click += new System.EventHandler(this.BtnStudyFavorite_Click);
             // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(332, 6);
+            // 
+            // BtnResume
+            // 
+            this.BtnResume.Name = "BtnResume";
+            this.BtnResume.Size = new System.Drawing.Size(335, 34);
+            this.BtnResume.Text = "前回の続きから";
+            this.BtnResume.Click += new System.EventHandler(this.BtnResume_Click);
+            // 
             // MnuEdit
             // 
             this.MnuEdit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -292,14 +341,15 @@
             // 
             this.BtnAddQuestion.Name = "BtnAddQuestion";
             this.BtnAddQuestion.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
-            this.BtnAddQuestion.Size = new System.Drawing.Size(261, 34);
+            this.BtnAddQuestion.Size = new System.Drawing.Size(270, 34);
             this.BtnAddQuestion.Text = "問題を追加";
             this.BtnAddQuestion.Click += new System.EventHandler(this.BtnAddQuestion_Click);
             // 
             // BtnEditQuestion
             // 
             this.BtnEditQuestion.Name = "BtnEditQuestion";
-            this.BtnEditQuestion.Size = new System.Drawing.Size(261, 34);
+            this.BtnEditQuestion.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F2)));
+            this.BtnEditQuestion.Size = new System.Drawing.Size(270, 34);
             this.BtnEditQuestion.Text = "問題を編集";
             this.BtnEditQuestion.Click += new System.EventHandler(this.BtnEditQuestion_Click);
             // 
@@ -423,52 +473,13 @@
             // 
             this.DeleteTimer.Tick += new System.EventHandler(this.DeleteTimer_Tick);
             // 
-            // ClmRate
+            // BtnPaste
             // 
-            this.ClmRate.DataPropertyName = "Rate";
-            this.ClmRate.HeaderText = "正解率（％）";
-            this.ClmRate.MinimumWidth = 8;
-            this.ClmRate.Name = "ClmRate";
-            this.ClmRate.ReadOnly = true;
-            this.ClmRate.Width = 150;
-            // 
-            // ClmLearn
-            // 
-            this.ClmLearn.DataPropertyName = "LearnCount";
-            this.ClmLearn.HeaderText = "学習回数";
-            this.ClmLearn.MinimumWidth = 8;
-            this.ClmLearn.Name = "ClmLearn";
-            this.ClmLearn.ReadOnly = true;
-            this.ClmLearn.Width = 150;
-            // 
-            // ClmFinalDate
-            // 
-            this.ClmFinalDate.DataPropertyName = "FinalDate";
-            this.ClmFinalDate.HeaderText = "最終学習日時";
-            this.ClmFinalDate.MinimumWidth = 8;
-            this.ClmFinalDate.Name = "ClmFinalDate";
-            this.ClmFinalDate.ReadOnly = true;
-            this.ClmFinalDate.Width = 150;
-            // 
-            // ClmFavorite
-            // 
-            this.ClmFavorite.DataPropertyName = "Favorite";
-            this.ClmFavorite.HeaderText = "お気に";
-            this.ClmFavorite.MinimumWidth = 8;
-            this.ClmFavorite.Name = "ClmFavorite";
-            this.ClmFavorite.Width = 150;
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(332, 6);
-            // 
-            // BtnResume
-            // 
-            this.BtnResume.Name = "BtnResume";
-            this.BtnResume.Size = new System.Drawing.Size(335, 34);
-            this.BtnResume.Text = "前回の続きから";
-            this.BtnResume.Click += new System.EventHandler(this.BtnResume_Click);
+            this.BtnPaste.Name = "BtnPaste";
+            this.BtnPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.BtnPaste.Size = new System.Drawing.Size(340, 34);
+            this.BtnPaste.Text = "貼り付け";
+            this.BtnPaste.Click += new System.EventHandler(this.BtnPaste_Click);
             // 
             // ClmStatement
             // 
@@ -572,6 +583,7 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn ClmFavorite;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem BtnResume;
+        private System.Windows.Forms.ToolStripMenuItem BtnPaste;
     }
 }
 

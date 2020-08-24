@@ -17,13 +17,8 @@ namespace Quiz
             QList,                  // List<Question>
             StudyingList,           // StudyingList
             RowHeader_Width,        // int
-            ClmStatement_Width,     // int
-            ClmAnswer_Width,        // int
-            ClmRuby_Width,          // int
-            ClmRate_Width,          // int
-            ClmLearn_Width,         // int
-            ClmFinalDate_Width,     // int
-            ClmFavorite_Width,      // int
+            Column_Width,           // ColumnData<int>
+            Column_Index,           // ColumnData<int>
             FmMain_Rectangle,       // Rectangle
 
             // Setting
@@ -99,13 +94,8 @@ namespace Quiz
                 { DataType.QList.ToString(), new List<Question>() },
                 { DataType.StudyingList.ToString(), null },
                 { DataType.RowHeader_Width.ToString(), 30 },
-                { DataType.ClmStatement_Width.ToString(), 400 },
-                { DataType.ClmAnswer_Width.ToString(), 200 },
-                { DataType.ClmRuby_Width.ToString(), 200 },
-                { DataType.ClmRate_Width.ToString(), 100 },
-                { DataType.ClmLearn_Width.ToString(), 100 },
-                { DataType.ClmFinalDate_Width.ToString(), 100 },
-                { DataType.ClmFavorite_Width.ToString(), 50 },
+                { DataType.Column_Width.ToString(), new ColumnData<int>(400, 200, 200, 100, 100, 100, 50) },
+                { DataType.Column_Index.ToString(), new ColumnData<int>(0, 1, 2, 3, 4, 5, 6) },
                 { DataType.FmMain_Rectangle.ToString(), new Rectangle(0, 0, 500, 300) },
 
                 { DataType.Encoding.ToString(), new UTF8Encoding() },

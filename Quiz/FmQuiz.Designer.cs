@@ -37,7 +37,10 @@
             this.TxbAnswer = new System.Windows.Forms.RichTextBox();
             this.TxbDesc = new System.Windows.Forms.RichTextBox();
             this.CmsAnswer = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.BtnSearchAnswer = new System.Windows.Forms.ToolStripMenuItem();
+            this.BtnGoogle = new System.Windows.Forms.ToolStripMenuItem();
+            this.BtnWiki = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.BtnCopy = new System.Windows.Forms.ToolStripMenuItem();
             this.CmsAnswer.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,6 +94,7 @@
             this.TxbQuestion.Size = new System.Drawing.Size(772, 168);
             this.TxbQuestion.TabIndex = 3;
             this.TxbQuestion.Text = "問題";
+            this.TxbQuestion.SelectionChanged += new System.EventHandler(this.TxbQuestion_SelectionChanged);
             this.TxbQuestion.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Control_KeyDown);
             // 
             // TxbAnswer
@@ -124,16 +128,38 @@
             // 
             this.CmsAnswer.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.CmsAnswer.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.BtnSearchAnswer});
+            this.BtnGoogle,
+            this.BtnWiki,
+            this.toolStripSeparator1,
+            this.BtnCopy});
             this.CmsAnswer.Name = "CmsAnswer";
-            this.CmsAnswer.Size = new System.Drawing.Size(188, 36);
+            this.CmsAnswer.Size = new System.Drawing.Size(241, 139);
             // 
-            // BtnSearchAnswer
+            // BtnGoogle
             // 
-            this.BtnSearchAnswer.Name = "BtnSearchAnswer";
-            this.BtnSearchAnswer.Size = new System.Drawing.Size(187, 32);
-            this.BtnSearchAnswer.Text = "ブラウザで検索";
-            this.BtnSearchAnswer.Click += new System.EventHandler(this.BtnSearchAnswer_Click);
+            this.BtnGoogle.Name = "BtnGoogle";
+            this.BtnGoogle.Size = new System.Drawing.Size(240, 32);
+            this.BtnGoogle.Text = "Googleで検索";
+            this.BtnGoogle.Click += new System.EventHandler(this.BtnGoogle_Click);
+            // 
+            // BtnWiki
+            // 
+            this.BtnWiki.Name = "BtnWiki";
+            this.BtnWiki.Size = new System.Drawing.Size(240, 32);
+            this.BtnWiki.Text = "Wikipediaで検索";
+            this.BtnWiki.Click += new System.EventHandler(this.BtnWiki_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(237, 6);
+            // 
+            // BtnCopy
+            // 
+            this.BtnCopy.Name = "BtnCopy";
+            this.BtnCopy.Size = new System.Drawing.Size(212, 32);
+            this.BtnCopy.Text = "コピー";
+            this.BtnCopy.Click += new System.EventHandler(this.BtnCopy_Click);
             // 
             // FmQuiz
             // 
@@ -164,6 +190,9 @@
         private System.Windows.Forms.RichTextBox TxbAnswer;
         private System.Windows.Forms.RichTextBox TxbDesc;
         private System.Windows.Forms.ContextMenuStrip CmsAnswer;
-        private System.Windows.Forms.ToolStripMenuItem BtnSearchAnswer;
+        private System.Windows.Forms.ToolStripMenuItem BtnGoogle;
+        private System.Windows.Forms.ToolStripMenuItem BtnWiki;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem BtnCopy;
     }
 }

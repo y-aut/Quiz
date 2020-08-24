@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using Microsoft.VisualBasic;
 using NMeCab;
 
@@ -59,6 +60,12 @@ namespace Quiz
             str = str.Trim().Replace('　', ' ').Replace('\n', ' ').Replace('\r', ' ');
             str = Regex.Replace(str, " [ ]+", " ");
             return str;
+        }
+
+        // エラーメッセージを表示
+        public static void ShowErr(this Exception e)
+        {
+            MessageBox.Show(e.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

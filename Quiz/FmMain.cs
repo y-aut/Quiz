@@ -109,7 +109,7 @@ namespace Quiz
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                e.ShowErr();
                 QList = new List<Question>();
             }
 
@@ -118,13 +118,14 @@ namespace Quiz
             Location = rect.Location;
 
             DgvQuestions.RowHeadersWidth = (int)Setting.GetData(Setting.DataType.RowHeader_Width);
-            ClmStatement.Width = (int)Setting.GetData(Setting.DataType.ClmStatement_Width);
-            ClmAnswer.Width = (int)Setting.GetData(Setting.DataType.ClmAnswer_Width);
-            ClmRuby.Width = (int)Setting.GetData(Setting.DataType.ClmRuby_Width);
-            ClmRate.Width = (int)Setting.GetData(Setting.DataType.ClmRate_Width);
-            ClmLearn.Width = (int)Setting.GetData(Setting.DataType.ClmLearn_Width);
-            ClmFinalDate.Width = (int)Setting.GetData(Setting.DataType.ClmFinalDate_Width);
-            ClmFavorite.Width = (int)Setting.GetData(Setting.DataType.ClmFavorite_Width);
+
+            var clmWidths = (ColumnData<int>)Setting.GetData(Setting.DataType.Column_Width);
+            var clmIndexes = (ColumnData<int>)Setting.GetData(Setting.DataType.Column_Index);
+            foreach (DataGridViewColumn clm in DgvQuestions.Columns)
+            {
+                clm.Width = clmWidths[(ColumnEnum)Enum.Parse(typeof(ColumnEnum), clm.Name)];
+                clm.DisplayIndex = clmIndexes[(ColumnEnum)Enum.Parse(typeof(ColumnEnum), clm.Name)];
+            }
         }
 
         public void SaveSettings()
@@ -132,13 +133,12 @@ namespace Quiz
             Setting.SetData(Setting.DataType.QList, QList);
             Setting.SetData(Setting.DataType.FmMain_Rectangle, new Rectangle(Location, Size));
             Setting.SetData(Setting.DataType.RowHeader_Width, DgvQuestions.RowHeadersWidth);
-            Setting.SetData(Setting.DataType.ClmStatement_Width, ClmStatement.Width);
-            Setting.SetData(Setting.DataType.ClmAnswer_Width, ClmAnswer.Width);
-            Setting.SetData(Setting.DataType.ClmRuby_Width, ClmRuby.Width);
-            Setting.SetData(Setting.DataType.ClmRate_Width, ClmRate.Width);
-            Setting.SetData(Setting.DataType.ClmLearn_Width, ClmLearn.Width);
-            Setting.SetData(Setting.DataType.ClmFinalDate_Width, ClmFinalDate.Width);
-            Setting.SetData(Setting.DataType.ClmFavorite_Width, ClmFavorite.Width);
+            Setting.SetData(Setting.DataType.Column_Width,
+                new ColumnData<int>(ClmStatement.Width, ClmAnswer.Width, ClmRuby.Width,
+                    ClmRate.Width, ClmLearn.Width, ClmFinalDate.Width, ClmFavorite.Width));
+            Setting.SetData(Setting.DataType.Column_Index,
+                new ColumnData<int>(ClmStatement.DisplayIndex, ClmAnswer.DisplayIndex, ClmRuby.DisplayIndex,
+                    ClmRate.DisplayIndex, ClmLearn.DisplayIndex, ClmFinalDate.DisplayIndex, ClmFavorite.DisplayIndex));
         }
 
         private void FmMain_FormClosed(object sender, FormClosedEventArgs e)
@@ -192,13 +192,10 @@ namespace Quiz
             };
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                // 絞り込みは解除する
-                SearchText = "";
-
                 var list = QuizIO.ImportCsv(ofd.FileName);
 
                 // 末尾の空行は削除する
-                if (QList.Last().IsEmpty) QList.RemoveAt(QList.Count - 1);
+                if (QList.Count != 0 && QList.Last().IsEmpty) QList.RemoveAt(QList.Count - 1);
 
                 if ((bool)Setting.GetData(Setting.DataType.ImportReplace))
                 {
@@ -217,7 +214,13 @@ namespace Quiz
                     QList.AddRange(list);
                 }
                 QList.MakeNo();
-                UpdateList();
+
+                // 絞り込み時は、追加したデータをもとに再検索する
+                if (IsSearching)
+                    Search();
+                else
+                    UpdateList();
+
                 SetInfoText($"{ofd.FileName} から{list.Count}個の問題がインポートされました");
             }
             ofd.Dispose();
@@ -278,18 +281,14 @@ namespace Quiz
             {
                 q.No = QList.Count + 1;
                 QList.Add(q);
-                // 絞り込み時は、検索後のデータにも追加する
+                // 絞り込み時は、追加したデータをもとに再検索する
                 if (IsSearching)
-                {
-                    if (q.Contains(TxbSearch.Text))
-                    {
-                        SearchedQList.Add(q);
-                        UpdateList();
-                    }
-                }
+                    Search();
                 else
+                {
                     UpdateList();
-                FocusLastRow();
+                    FocusLastRow();
+                }
                 SetInfoText($"問題を追加しました：{q.Statement.FirstN(15)}");
             }
         }
@@ -453,6 +452,7 @@ namespace Quiz
                 questionBindingSource.DataSource = QList;
 
                 DgvQuestions.AllowUserToAddRows = true;
+                SetInfoText($"全問題を表示しています。問題数は{QList.Count}です。");
             }
             else
             {
@@ -534,65 +534,103 @@ namespace Quiz
                         }
                         else if (Regex.IsMatch(cmd, @"^[1-9][0-9]*n([+-][1-9][0-9]*)?$"))
                         {
-                            // mod抽出 (n = 0,1,2,...)
-                            int mod = int.Parse(cmd.Substring(0, cmd.IndexOf('n')));
-                            int surplus = cmd[cmd.Length - 1] == 'n' ? 0 :
-                                int.Parse(cmd.Substring(cmd.IndexOf('n') + 1));
-                            if (surplus < 0) surplus = surplus % mod + mod;
-
-                            var buflist = new List<Question>();
-                            for (int i = surplus == 0 ? mod - 1 : surplus - 1; i < buf.Count(); i += mod)
+                            try
                             {
-                                buflist.Add(buf.ElementAt(i));
+                                // mod抽出 (n = 0,1,2,...)
+                                int mod = int.Parse(cmd.Substring(0, cmd.IndexOf('n')));
+                                int surplus = cmd[cmd.Length - 1] == 'n' ? 0 :
+                                    int.Parse(cmd.Substring(cmd.IndexOf('n') + 1));
+                                if (surplus < 0) surplus = surplus % mod + mod;
+
+                                var buflist = new List<Question>();
+                                for (int i = surplus == 0 ? mod - 1 : surplus - 1; i < buf.Count(); i += mod)
+                                {
+                                    buflist.Add(buf.ElementAt(i));
+                                }
+                                buf = buflist;
                             }
-                            buf = buflist;
+                            catch (Exception e)
+                            {
+                                e.ShowErr();
+                            }
                         }
                         else if (Regex.IsMatch(cmd + ",", @"^(([1-9][0-9]*(-([1-9][0-9]*)?)?),)+$"))
                         {
-                            // 範囲抽出（10-23,25,35-など）
-                            var indlist = new List<int>();
-                            foreach (var range in cmd.Split(','))
+                            try
                             {
-                                if (range.Contains('-'))
+                                // 範囲抽出（10-23,25,35-など）
+                                var indlist = new List<int>();
+                                foreach (var range in cmd.Split(','))
                                 {
-                                    int a = int.Parse(range.Substring(0, range.IndexOf('-')));
-                                    int b = range[range.Length - 1] == '-' ? buf.Count() :
-                                        int.Parse(range.Substring(range.IndexOf('-') + 1));
-                                    int min = Math.Max(Math.Min(a, b), 1);
-                                    int max = Math.Min(Math.Max(a, b), buf.Count());
+                                    if (range.Contains('-'))
+                                    {
+                                        int a = int.Parse(range.Substring(0, range.IndexOf('-')));
+                                        int b = range[range.Length - 1] == '-' ? buf.Count() :
+                                            int.Parse(range.Substring(range.IndexOf('-') + 1));
+                                        int min = Math.Max(Math.Min(a, b), 1);
+                                        int max = Math.Min(Math.Max(a, b), buf.Count());
 
-                                    for (int i = min - 1; i < max; ++i)
-                                        if (!indlist.Contains(i)) indlist.Add(i);
+                                        for (int i = min - 1; i < max; ++i)
+                                            if (!indlist.Contains(i)) indlist.Add(i);
+                                    }
+                                    else
+                                    {
+                                        int a = int.Parse(range);
+                                        if (1 <= a && a <= buf.Count() && !indlist.Contains(a - 1))
+                                            indlist.Add(a - 1);
+                                    }
                                 }
-                                else
-                                {
-                                    int a = int.Parse(range);
-                                    if (1 <= a && a <= buf.Count() && !indlist.Contains(a - 1))
-                                        indlist.Add(a - 1);
-                                }
+                                var buflist = new List<Question>();
+                                foreach (var i in indlist) buflist.Add(buf.ElementAt(i));
+                                buf = buflist;
                             }
-                            var buflist = new List<Question>();
-                            foreach (var i in indlist) buflist.Add(buf.ElementAt(i));
-                            buf = buflist;
+                            catch (Exception e)
+                            {
+                                e.ShowErr();
+                            }
                         }
                         else if (Regex.IsMatch(cmd, @"^[0-9]+d$"))
                         {
-                            // n日以内に学んだものを抽出
-                            int n = int.Parse(cmd.Substring(0, cmd.Length - 1));
-                            DateTime min = DateTime.Today.AddDays(-n).Date;
-                            buf = buf.Where(i => i.FinalDate.Date >= min.Date);
+                            try
+                            {
+                                // n日以内に学んだものを抽出
+                                int n = int.Parse(cmd.Substring(0, cmd.Length - 1));
+                                DateTime min = DateTime.Today.AddDays(-n).Date;
+                                buf = buf.Where(i => i.FinalDate.Date >= min.Date);
+                            }
+                            catch (Exception e)
+                            {
+                                e.ShowErr();
+                            }
                         }
                         else if (Regex.IsMatch(cmd, @"^-[0-9]+d$"))
                         {
-                            // n日以内に学んでいないものを抽出
-                            int n = int.Parse(cmd.Substring(1, cmd.Length - 2));
-                            DateTime min = DateTime.Today.AddDays(-n).Date;
-                            buf = buf.Where(i => i.FinalDate.Date < min.Date);
+                            try
+                            {
+                                // n日以内に学んでいないものを抽出
+                                int n = int.Parse(cmd.Substring(1, cmd.Length - 2));
+                                DateTime min = DateTime.Today.AddDays(-n).Date;
+                                buf = buf.Where(i => i.FinalDate.Date < min.Date);
+                            }
+                            catch (Exception e)
+                            {
+                                e.ShowErr();
+                            }
                         }
                     }
                     else
                     {
-                        buf = buf.Where(i => i.Contains(word)).ToList();
+                        if (word[0] == '-')
+                        {
+                            var key = word.Substring(1);
+                            buf = buf.Where(i => !i.Contains(key)).ToList();
+                        }
+                        else
+                        {
+                            // エスケープ文字
+                            var key = word.Replace(@"\-", "-").Replace(@"\%", "%").Replace(@"\\", @"\");
+                            buf = buf.Where(i => i.Contains(key)).ToList();
+                        }
                     }
                 }
 
@@ -636,6 +674,7 @@ namespace Quiz
             }
             QList.MakeNo();
             UpdateList();
+            SetInfoText($"{DeletingList.Count}個の問題が削除されました");
         }
 
         private void FocusLastRow()
@@ -735,6 +774,32 @@ namespace Quiz
         private void BtnResume_Click(object sender, EventArgs e)
         {
             FmQuiz.ShowResume();
+        }
+
+        private void BtnPaste_Click(object sender, EventArgs e)
+        {
+            var str = Clipboard.GetText();
+            if (str == null || str == "") return;
+            QuizIO.ToQLists(str, out var lists);
+            if (lists.Count == 0) return;
+
+            foreach (var list in lists)
+                for (int i = 0; i < list.Count; ++i)
+                    list[i].No = QList.Count + 1 + i;
+
+            if (FmPreview.Show(lists, out var questions))
+            {
+                QList.AddRange(questions);
+                // 絞り込み時は、追加したデータをもとに再検索する
+                if (IsSearching)
+                    Search();
+                else
+                {
+                    UpdateList();
+                    FocusLastRow();
+                }
+                SetInfoText($"{questions.Count}個の問題が貼り付けられました");
+            }
         }
     }
 }

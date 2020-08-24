@@ -134,7 +134,7 @@ namespace Quiz
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                e.ShowErr();
                 return new List<Question>();
             }
 
@@ -159,7 +159,7 @@ namespace Quiz
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                e.ShowErr();
             }
         }
 
@@ -168,6 +168,66 @@ namespace Quiz
             str = str.Replace("\"", "\"\"");
             if (str.Contains(',')) return $"\"{str}\"";
             else return str;
+        }
+
+        public static void ToQLists(string str, out List<List<Question>> lists)
+        {
+            lists = new List<List<Question>>();
+
+            // splitしたとき、後ろに\rが残っていると面倒くさい
+            str = str.Trim().Replace('\r', '\n');
+            str = Regex.Replace(str, "\n[\n]+", "\n");
+
+            // LINE (10:10 sender Statement \n 10:10 sender Answer)
+            {
+                List<Question> buf = new List<Question>();
+                bool isState = true;
+
+                Question q = null;
+                foreach (var line in str.Split('\n'))
+                {
+                    var cmds = line.Split(' ');
+                    if (cmds.Length >= 3)
+                    {
+                        var val = line.Substring(line.IndexOf(' ') + 1);
+                        val = val.Substring(val.IndexOf(' ') + 1);
+                        if (isState)
+                            q = new Question() { Statement = val };
+                        else
+                        {
+                            q.Answer = val;
+                            buf.Add(q);
+                        }
+                        isState = !isState;
+                    }
+                }
+
+                if (buf.Count != 0)
+                    lists.Add(buf);
+            }
+
+            // Normal (Statement \n Answer)
+            {
+                List<Question> buf = new List<Question>();
+                bool isState = true;
+
+                Question q = null;
+                foreach (var line in str.Split('\n'))
+                {
+                    if (isState)
+                        q = new Question() { Statement = line };
+                    else
+                    {
+                        q.Answer = line;
+                        buf.Add(q);
+                    }
+                    isState = !isState;
+                }
+
+                if (buf.Count != 0)
+                    lists.Add(buf);
+            }
+
         }
     }
 }

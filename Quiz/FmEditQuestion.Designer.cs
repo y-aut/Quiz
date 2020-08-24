@@ -114,9 +114,9 @@
             // 
             this.BtnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnOK.Enabled = false;
-            this.BtnOK.Location = new System.Drawing.Point(452, 335);
+            this.BtnOK.Location = new System.Drawing.Point(433, 335);
             this.BtnOK.Name = "BtnOK";
-            this.BtnOK.Size = new System.Drawing.Size(109, 34);
+            this.BtnOK.Size = new System.Drawing.Size(120, 34);
             this.BtnOK.TabIndex = 6;
             this.BtnOK.Text = "決定";
             this.BtnOK.UseVisualStyleBackColor = true;
@@ -126,9 +126,9 @@
             // BtnCancel
             // 
             this.BtnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnCancel.Location = new System.Drawing.Point(567, 335);
+            this.BtnCancel.Location = new System.Drawing.Point(559, 335);
             this.BtnCancel.Name = "BtnCancel";
-            this.BtnCancel.Size = new System.Drawing.Size(109, 34);
+            this.BtnCancel.Size = new System.Drawing.Size(120, 34);
             this.BtnCancel.TabIndex = 7;
             this.BtnCancel.Text = "キャンセル";
             this.BtnCancel.UseVisualStyleBackColor = true;

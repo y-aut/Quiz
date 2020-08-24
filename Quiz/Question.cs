@@ -46,7 +46,7 @@ namespace Quiz
             Answer = answer;
             Ruby = ruby;
             TrialCount = trial;
-            CorrectCount = correct;
+            CorrectCount = trial != 0 ? correct : 0;
             LearnCount = learn;
             FinalDate = date;
             Favorite = favorite;

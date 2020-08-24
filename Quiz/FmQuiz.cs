@@ -70,6 +70,14 @@ namespace Quiz
 
         private void FmQuiz_Load(object sender, EventArgs e)
         {
+            // bug fix
+            TxbDesc.AutoWordSelection = true;
+            TxbDesc.AutoWordSelection = false;
+            TxbQuestion.AutoWordSelection = true;
+            TxbQuestion.AutoWordSelection = false;
+            TxbAnswer.AutoWordSelection = true;
+            TxbAnswer.AutoWordSelection = false;
+
             LoadNext();
         }
 
@@ -129,11 +137,6 @@ namespace Quiz
             }
         }
 
-        private void BtnSearchAnswer_Click(object sender, EventArgs e)
-        {
-            Process.Start($"https://www.google.com/search?q={QList.Current.Question.Answer}");
-        }
-
         private void BtnCorrect_Click(object sender, EventArgs e)
         {
             QList.Correct();
@@ -144,6 +147,41 @@ namespace Quiz
         {
             QList.Incorrect();
             LoadNext();
+        }
+
+        private void BtnGoogle_Click(object sender, EventArgs e)
+        {
+            var txb = (RichTextBox)CmsAnswer.SourceControl;
+            if (txb.SelectionLength != 0)
+                Process.Start($"https://www.google.com/search?q={txb.SelectedText}");
+            else if (txb == TxbAnswer)
+                Process.Start($"https://www.google.com/search?q={QList.Current.Question.Answer}");
+        }
+
+        private void BtnWiki_Click(object sender, EventArgs e)
+        {
+            var txb = (RichTextBox)CmsAnswer.SourceControl;
+            if (txb.SelectionLength != 0)
+                Process.Start($"https://ja.wikipedia.org/wiki/{txb.SelectedText}");
+            else if (txb == TxbAnswer)
+                Process.Start($"https://ja.wikipedia.org/wiki/{QList.Current.Question.Answer}");
+        }
+
+        private void BtnCopy_Click(object sender, EventArgs e)
+        {
+            var txb = (RichTextBox)CmsAnswer.SourceControl;
+            if (txb.SelectionLength != 0)
+                Clipboard.SetText(txb.SelectedText);
+            else if (txb == TxbAnswer)
+                Clipboard.SetText(QList.Current.Question.Answer);
+        }
+
+        private void TxbQuestion_SelectionChanged(object sender, EventArgs e)
+        {
+            if (TxbQuestion.SelectionLength != 0)
+                TxbQuestion.ContextMenuStrip = CmsAnswer;
+            else
+                TxbQuestion.ContextMenuStrip = null;
         }
     }
 

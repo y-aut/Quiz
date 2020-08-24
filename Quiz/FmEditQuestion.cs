@@ -46,7 +46,7 @@ namespace Quiz
         public static DialogResult EditShow(List<Question> question)
         {
             var fm = new FmEditQuestion() {
-                flgRubyEditted = question.First().Ruby != "",
+                flgRubyEditted = (question.First().Ruby ?? "") != "",
                 answer = question,
                 current = 0,
             };
@@ -133,16 +133,8 @@ namespace Quiz
             Thread.Sleep(50);
             if (str != TxbAnswer.Text) return;
 
-            // 漢字なしなら記号と、括弧内の文字列を抜いたものを入力する
-            const string RemoveChar = @"・！？!?、。,. /\￥「」『』$-=＝~～：；:;%％";
-            foreach (char c in RemoveChar) str = str.Replace(c.ToString(), "");
-            if (str.Contains('(')) str = str.Substring(0, str.IndexOf('('));
-            if (str.Contains('（')) str = str.Substring(0, str.IndexOf('（'));
-
             // 問題文に「何効果」のような表記があるならば、「ワイセンベルク効果」の読みは「ワイセンベルク」とする
             string state = TxbStatement.Text;
-            // 何・オブ・カリビアンみたいなのがあるかもしれないので
-            foreach (char c in RemoveChar) state = state.Replace(c.ToString(), "");
 
             state = state.Replace("いくつ", "何つ");
             if (state.Contains('何'))
@@ -159,6 +151,17 @@ namespace Quiz
                 if (--offset != 0 && str.Substring(str.Length - offset, offset) == state.Substring(ind + 1, offset))
                     str = str.Substring(0, str.Length - offset);
             }
+            else if (state.Contains('誰') && str.Contains('・'))
+            {
+                // ・以下を取り出す
+                str = str.Substring(str.LastIndexOf('・') + 1);
+            }
+
+            // 漢字なしなら記号と、括弧内の文字列を抜いたものを入力する
+            const string RemoveChar = @"・！？!?、。,. /\￥「」『』$-=＝~～：；:;%％";
+            foreach (char c in RemoveChar) str = str.Replace(c.ToString(), "");
+            if (str.Contains('(')) str = str.Substring(0, str.IndexOf('('));
+            if (str.Contains('（')) str = str.Substring(0, str.IndexOf('（'));
 
             //if (Regex.IsMatch(str, @"^[\p{IsHiragana}\p{IsKatakana}A-zＡ-ｚ]*$"))
             str = str.GetRuby();
@@ -201,11 +204,12 @@ namespace Quiz
                     {
                         flgCancel = false; Close(); return;
                     }
+                    flgRubyEditted = (answer[current].Ruby ?? "") != "";
+
                     TxbStatement.Text = answer[current].Statement;
                     TxbAnswer.Text = answer[current].Answer;
                     TxbRuby.Text = answer[current].Ruby;
 
-                    flgRubyEditted = TxbRuby.Text != "";
                     // 空欄のテキストボックスにフォーカス
                     if (TxbStatement.Text == "") TxbStatement.Focus();
                     else if (TxbAnswer.Text == "") TxbAnswer.Focus();

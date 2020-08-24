@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddMethod.cs" />
+    <Compile Include="ColumnData.cs" />
     <Compile Include="FmEditQuestion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -70,6 +71,12 @@
     </Compile>
     <Compile Include="FmMain.Designer.cs">
       <DependentUpon>FmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FmPreview.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FmPreview.Designer.cs">
+      <DependentUpon>FmPreview.cs</DependentUpon>
     </Compile>
     <Compile Include="FmQuiz.cs">
       <SubType>Form</SubType>
@@ -99,6 +106,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FmMain.resx">
       <DependentUpon>FmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FmPreview.resx">
+      <DependentUpon>FmPreview.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FmQuiz.resx">
       <DependentUpon>FmQuiz.cs</DependentUpon>
