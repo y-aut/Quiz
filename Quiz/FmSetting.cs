@@ -40,12 +40,17 @@ namespace Quiz
                 RdbImportReplace.Checked = true;
             else
                 RdbImportAdd.Checked = true;
+            if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                RdbStudyFmQuiz.Checked = true;
+            else
+                RdbStudyFmStudy.Checked = true;
         }
 
         private void SaveSettings()
         {
             Setting.SetData(Setting.DataType.Encoding, RdbUTF_8.Checked ? new UTF8Encoding() : Encoding.GetEncoding("Shift_JIS"));
             Setting.SetData(Setting.DataType.ImportReplace, RdbImportReplace.Checked);
+            Setting.SetData(Setting.DataType.UseFmQuiz, RdbStudyFmQuiz.Checked);
         }
 
         private void BtnOK_Click(object sender, EventArgs e)

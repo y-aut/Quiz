@@ -20,10 +20,13 @@ namespace Quiz
             Column_Width,           // ColumnData<int>
             Column_Index,           // ColumnData<int>
             FmMain_Rectangle,       // Rectangle
+            FmStudy_Rectangle,      // Rectangle
+            FmQuiz_Rectangle,       // Rectangle
 
             // Setting
             Encoding,               // Encoding
             ImportReplace,          // bool
+            UseFmQuiz,              // bool
 
         }
 
@@ -97,9 +100,12 @@ namespace Quiz
                 { DataType.Column_Width.ToString(), new ColumnData<int>(400, 200, 200, 100, 100, 100, 50) },
                 { DataType.Column_Index.ToString(), new ColumnData<int>(0, 1, 2, 3, 4, 5, 6) },
                 { DataType.FmMain_Rectangle.ToString(), new Rectangle(0, 0, 500, 300) },
+                { DataType.FmStudy_Rectangle.ToString(), new Rectangle(0, 0, 500, 300) },
+                { DataType.FmQuiz_Rectangle.ToString(), new Rectangle(0, 0, 300, 500) },
 
                 { DataType.Encoding.ToString(), new UTF8Encoding() },
                 { DataType.ImportReplace.ToString(), false },
+                { DataType.UseFmQuiz.ToString(), false },
             };
         }
 

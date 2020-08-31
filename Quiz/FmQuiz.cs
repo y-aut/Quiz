@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,7 +14,135 @@ namespace Quiz
     public partial class FmQuiz : Form
     {
         private StudyingList QList;
-        private bool finished = false;
+        private bool finished = false;  // 学習が完了したか
+        // State
+        private State _state = State.ST_START;
+        // 前のState
+        private State PreState { get; set; } = State.ST_START;
+        // PcbMain.Image
+        private Bitmap bmp;
+        // 問題文の表示文字数
+        private int charCnt = 0;
+        // 残り思考時間[ms]
+        private int restThinkingTime = 0;
+        // 残り入力猶予時間[s]
+        private int restInputTime = 0;
+        // 解答中の文字列
+        private string answer = "";
+        // 文字入力ボタンの文字
+        private string inputChars = "";
+        // ボタンが押されているか（マウス的に）
+        private bool btnPressed = false;
+
+        // Const
+        // フレーム[ms]
+        private const int FRAME = 1000 / 30;
+        // 問題番号の表示時間[ms]
+        private const int FR_NO = 1000;
+        // 問題文の1文字あたりの表示時間[ms]
+        private const int FR_CHAR = 100;
+        // 問題文の1文字あたりの表示時間[ms]（早送り時）
+        private const int FR_CHAR_FAST = 20;
+        // 思考時間[ms]
+        private const int FR_THINKING = 2500;
+        // 解答表示時間[ms]
+        private const int FR_SHOWANSWER = 5000;
+        // 1文字あたりの解答猶予時間[s]
+        private const int FR_INPUT = 5;
+        // 文字入力ボタンの個数
+        private const int INPUT_CNT = 4;
+
+        // Drawing Const
+        // 問題番号の描画開始位置y座標[%]
+        private const int NO_TOP_PER = 10;
+        // 問題文の描画開始位置
+        private static readonly Point PtStatement = new Point(40, 20);
+        // "Q."の描画開始位置
+        private static readonly Point PtQ = new Point(20, 20);
+        // 右端余白
+        private const int RIGHT_MAR = 20;
+        // 残り時間バーの高さ
+        private const int BAR_HEIGHT = 5;
+        // 問題文の下端と解答のy座標間隔
+        private const int STAANS_Y_MAR = 20;
+        // 解答の下端と読みのy座標間隔
+        private const int ANSRUB_Y_MAR = 10;
+        // 正誤表示のy座標[%]
+        private const int JUDGMENT_Y_PER = 70;
+        // 解答中ウィンドウのy座標[%]
+        private const int ANSWERING_TOP_PER = 40;
+        // 解答中ウィンドウの幅[%]
+        private const int ANSWERING_WIDTH_PER = 60;
+        // 解答中ウィンドウの高さ[%]
+        private const int ANSWERING_HEIGHT_PER = 30;
+        // 解答中ウィンドウ中の残り時間表示の上端余白
+        private const int ANSWERING_REST_TOP_MAR = 10;
+        // 解答中ウィンドウ中の残り時間表示の右端余白
+        private const int ANSWERING_REST_RIGHT_MAR = 20;
+        // 文字入力ボタンのy座標[%]
+        private const int INPUT_TOP_PER = 80;
+        // 文字入力ボタンのサイズ
+        private static readonly Size INPUT_SIZE = new Size(50, 50);
+        // 文字入力ボタンの間隔
+        private const int INPUT_MAR = 10;
+        // 早押しボタンのy座標[%]
+        private const int BUTTON_TOP_PER = 70;
+        // 早押しボタンのサイズ
+        private static readonly Size BUTTON_SIZE = new Size(120, 120);
+
+        // フォント
+        private static readonly Font FtNo = new Font("HGSｺﾞｼｯｸM", 16);
+        private static readonly Font FtStatement = new Font("HGSｺﾞｼｯｸM", 12);
+        private static readonly Font FtAnswer = FtNo;
+        private static readonly Font FtRuby = FtStatement;
+        private static readonly Font FtType = FtStatement;
+        private static readonly Font FtTypeRestTime = FtStatement;
+        private static readonly Font FtInput = new Font("HGSｺﾞｼｯｸM", 14);
+        private static readonly Font FtJudgment = new Font("HGSｺﾞｼｯｸM", 50);
+        // 左右中央揃え
+        private static readonly StringFormat SfTopCenter = new StringFormat()
+        {
+            Alignment = StringAlignment.Center,
+            LineAlignment = StringAlignment.Near,
+        };
+        // 上下左右中央揃え
+        private static readonly StringFormat SfCenter = new StringFormat()
+        {
+            Alignment = StringAlignment.Center,
+            LineAlignment = StringAlignment.Center,
+        };
+        // 右揃え
+        private static readonly StringFormat SfTopRight = new StringFormat()
+        {
+            Alignment = StringAlignment.Far,
+            LineAlignment = StringAlignment.Near,
+        };
+
+        // 色
+        // 残り時間バーの色
+        private static readonly Brush ColBar = Brushes.Red;
+
+        public State State
+        {
+            get => _state;
+            set
+            {
+                PreState = _state;
+                _state = value;
+            }
+        }
+
+        // 文字入力ボタンの位置
+        private Rectangle InputRect(int index /* 0~3 */)
+            => new Rectangle((PcbMain.Width - INPUT_MAR * 3) / 2 - INPUT_SIZE.Width * 2 + (INPUT_SIZE.Width + INPUT_MAR) * index,
+                INPUT_TOP_PER * PcbMain.Height / 100, INPUT_SIZE.Width, INPUT_SIZE.Height);
+        // 文字入力ボタンの文字
+        private string InputChar(int index /* 0~3 */) => inputChars[index].ToString();
+
+        // 早押しボタンの位置
+        private Rectangle ButtonRect()
+            => new Rectangle((PcbMain.Width - BUTTON_SIZE.Width) / 2, BUTTON_TOP_PER * PcbMain.Height / 100,
+                BUTTON_SIZE.Width, BUTTON_SIZE.Height);
 
         public FmQuiz()
         {
@@ -28,7 +155,7 @@ namespace Quiz
             {
                 QList = new StudyingList(qlist),
             };
-            if (fm.QList.ProgressCount(0) == 0)
+            if (fm.QList.IsEmpty)
             {
                 MessageBox.Show("問題がありません。", "中止", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -43,7 +170,7 @@ namespace Quiz
             {
                 QList = new StudyingList(Startup.Fm_Main.QList, (StudyingList)Setting.GetData(Setting.DataType.StudyingList)),
             };
-            if (fm.QList.ProgressCount(0) == 0)
+            if (fm.QList.IsEmpty)
             {
                 MessageBox.Show("問題がありません。", "中止", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -51,79 +178,33 @@ namespace Quiz
             fm.Show();
         }
 
-        private void LoadNext()
-        {
-            // Load the next question
-            if (!QList.NextIndex()) { finished = true; Close(); return; }
-
-            var q = QList.Current;
-            TxbQuestion.Text = q.Question.Statement;
-            TxbAnswer.Text = "";
-            TxbAnswer.ContextMenuStrip = null;
-            // Update the description
-            TxbDesc.Text = (q.Progress == 1 ? "学習中" : "未知　") +
-                $"\t\t{QList.ProgressCount(0)} → {QList.ProgressCount(1)} → {QList.ProgressCount(2)}";
-            BtnShowAnswer.Visible = true;
-            BtnCorrect.Visible = BtnIncorrect.Visible = false;
-            BtnShowAnswer.Focus();
-        }
-
         private void FmQuiz_Load(object sender, EventArgs e)
         {
-            // bug fix
-            TxbDesc.AutoWordSelection = true;
-            TxbDesc.AutoWordSelection = false;
-            TxbQuestion.AutoWordSelection = true;
-            TxbQuestion.AutoWordSelection = false;
-            TxbAnswer.AutoWordSelection = true;
-            TxbAnswer.AutoWordSelection = false;
+            var rect = (Rectangle)Setting.GetData(Setting.DataType.FmQuiz_Rectangle);
+            Location = rect.Location;
+            Size = rect.Size;
 
-            LoadNext();
-        }
+            PcbMain.Size = ClientSize;
+            bmp = new Bitmap(PcbMain.Width, PcbMain.Height);
+            PcbMain.Image = bmp;
 
-        private void BtnShowAnswer_Click(object sender, EventArgs e)
-        {
-            TxbAnswer.ContextMenuStrip = CmsAnswer;
-            TxbAnswer.Text = QList.Current.Question.Answer + "\n" + QList.Current.Question.Ruby;
-            TxbAnswer.Select(0, QList.Current.Question.Answer.Length);
-            TxbAnswer.SelectionColor = Color.Red;
-            TxbAnswer.SelectionFont = new Font(TxbAnswer.Font.FontFamily, 20);
-            BtnShowAnswer.Visible = false;
-            BtnCorrect.Visible = BtnIncorrect.Visible = true;
-            BtnCorrect.Focus();
-        }
-
-        private void ShowAnswer(int length)
-        {
-            length = Math.Min(TxbAnswer.Text.Length + length, QList.Current.Question.Answer.Length);
-            TxbAnswer.Text = QList.Current.Question.Answer.Substring(0, length);
-            TxbAnswer.Select(0, TxbAnswer.Text.Length);
-            TxbAnswer.SelectionColor = Color.Red;
-            TxbAnswer.SelectionFont = new Font(TxbAnswer.Font.FontFamily, 20);
-        }
-
-        private void Control_KeyDown(object sender, KeyEventArgs e)
-        {
-            e.SuppressKeyPress = true;
-
-            if (BtnCorrect.Visible)
-            {
-                if (e.KeyCode == Keys.Y) BtnCorrect_Click(BtnCorrect, e);
-                else if (e.KeyCode == Keys.N) BtnIncorrect_Click(BtnIncorrect, e);
-            }
-            else
-            {
-                if (e.KeyCode == Keys.Y || e.KeyCode == Keys.N)
-                    BtnShowAnswer_Click(BtnShowAnswer, e);
-                // n文字出現
-                else  if (Keys.D1 <= e.KeyCode && e.KeyCode <= Keys.D9)
-                    ShowAnswer(e.KeyCode - Keys.D0);
-            }
+            Proceed();
+            Draw();
+            DrawTimer.Start();
         }
 
         private void FmQuiz_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Setting.SetData(Setting.DataType.FmQuiz_Rectangle, new Rectangle(Location, Size));
+
+            DrawTimer.Stop();
+            bmp.Dispose();
+            bmp = null;
+
             Startup.Fm_Main.UpdateList();
+            // 解答表示中の場合は次の問題をロード
+            if (!finished && (State & State.ST_DELETE_FLAGS) == State.ST_SHOWANSWER && !QList.NextIndex())
+                finished = true;
             // 学習中なら再開できるようにしておく
             if (!finished)
             {
@@ -137,213 +218,430 @@ namespace Quiz
             }
         }
 
-        private void BtnCorrect_Click(object sender, EventArgs e)
+        public void Draw()
         {
-            QList.Correct();
-            LoadNext();
-        }
-
-        private void BtnIncorrect_Click(object sender, EventArgs e)
-        {
-            QList.Incorrect();
-            LoadNext();
-        }
-
-        private void BtnGoogle_Click(object sender, EventArgs e)
-        {
-            var txb = (RichTextBox)CmsAnswer.SourceControl;
-            if (txb.SelectionLength != 0)
-                Process.Start($"https://www.google.com/search?q={txb.SelectedText}");
-            else if (txb == TxbAnswer)
-                Process.Start($"https://www.google.com/search?q={QList.Current.Question.Answer}");
-        }
-
-        private void BtnWiki_Click(object sender, EventArgs e)
-        {
-            var txb = (RichTextBox)CmsAnswer.SourceControl;
-            if (txb.SelectionLength != 0)
-                Process.Start($"https://ja.wikipedia.org/wiki/{txb.SelectedText}");
-            else if (txb == TxbAnswer)
-                Process.Start($"https://ja.wikipedia.org/wiki/{QList.Current.Question.Answer}");
-        }
-
-        private void BtnCopy_Click(object sender, EventArgs e)
-        {
-            var txb = (RichTextBox)CmsAnswer.SourceControl;
-            if (txb.SelectionLength != 0)
-                Clipboard.SetText(txb.SelectedText);
-            else if (txb == TxbAnswer)
-                Clipboard.SetText(QList.Current.Question.Answer);
-        }
-
-        private void TxbQuestion_SelectionChanged(object sender, EventArgs e)
-        {
-            if (TxbQuestion.SelectionLength != 0)
-                TxbQuestion.ContextMenuStrip = CmsAnswer;
-            else
-                TxbQuestion.ContextMenuStrip = null;
-        }
-    }
-
-    // FmQuizで学習中の問題リストを管理
-    [Serializable]
-    public class StudyingList
-    {
-        int i1, i2; // QLists[i1][i2]を学習中
-
-        const int Q_COUNT = 10; // 一度に学習する問題の最大数
-        readonly List<List<QuestionProg>> QLists;    // 学習を完了したものは削除していく
-
-        bool addIndex = false;  // NextIndex()でindexを進めるか。初回ロード時はfalseにしておく。
-
-        // 問題数
-        int[] progress_cnt = { 0, 0, 0 };
-
-        public int ProgressCount(int progress) => progress_cnt[progress];
-
-        public QuestionProg Current => QLists[i1][i2];
-
-        public StudyingList(IEnumerable<Question> qlist)
-        {
-            QLists = new List<List<QuestionProg>>();
-            int cnt = 0;
-
-            // Shuffle
-            int[] ind = new int[qlist.Count()];
-            for (int i = 0; i < ind.Length; ++i) ind[i] = i;
-            ind = ind.OrderBy(i => Guid.NewGuid()).ToArray();
-
-            for (int i = 0; i < ind.Length; ++i)
+            using (Graphics grp = Graphics.FromImage(bmp))
             {
-                if (qlist.ElementAt(ind[i]).IsOK)
+                grp.Clear(Color.Transparent);
+                grp.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+
+                switch (State & State.ST_DELETE_FLAGS)
                 {
-                    if (cnt == 0) QLists.Add(new List<QuestionProg>());
-                    QLists.Last().Add(new QuestionProg(qlist.ElementAt(ind[i])));
-                    if (++cnt == Q_COUNT) cnt = 0;
-                    ++progress_cnt[0];
+                    case State.ST_NO:
+                        // 問題番号を描画
+                        grp.DrawString($"No. {QList.Current.Question.No}", FtNo, Brushes.Black,
+                            new Rectangle(0, PcbMain.Height * NO_TOP_PER / 100, PcbMain.Width, 1000), SfTopCenter);
+                        btnPressed = false;
+                        // 早押しボタンを表示
+                        DrawButton(grp);
+                        break;
+
+                    case State.ST_QUESTION:
+                        // "Q."を描画
+                        grp.DrawString("Q.", FtStatement, Brushes.Black, PtQ);
+                        // 問題文を描画
+                        grp.DrawString(QList.Current.Question.Statement.Substring(0, charCnt),
+                            FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                        // 早押しボタンを表示
+                        DrawButton(grp);
+                        break;
+
+                    case State.ST_WAIT:
+                        // "Q."を描画
+                        grp.DrawString("Q.", FtStatement, Brushes.Black, PtQ);
+                        // 問題文を描画
+                        grp.DrawString(QList.Current.Question.Statement,
+                            FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                        // 残り時間バーを表示
+                        grp.FillRectangle(ColBar, new Rectangle(0, 0, PcbMain.Width * restThinkingTime / FR_THINKING, BAR_HEIGHT));
+                        // 早押しボタンを表示
+                        DrawButton(grp);
+                        break;
+
+                    case State.ST_ANSWER:
+                        // "Q."を描画
+                        grp.DrawString("Q.", FtStatement, Brushes.Black, PtQ);
+                        // 問題文を描画
+                        if (PreState == State.ST_QUESTION)
+                        {
+                            grp.DrawString(QList.Current.Question.Statement.Substring(0, charCnt),
+                                FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                        }
+                        else
+                        {
+                            grp.DrawString(QList.Current.Question.Statement,
+                                FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                            // 残り時間バーを表示
+                            grp.FillRectangle(ColBar, new Rectangle(0, 0, PcbMain.Width * restThinkingTime / FR_THINKING, BAR_HEIGHT));
+                        }
+                        // 早押しボタンを表示
+                        DrawButton(grp);
+                        {
+                            int width = PcbMain.Width * ANSWERING_WIDTH_PER / 100;
+                            var rect = new Rectangle((PcbMain.Width - width) / 2, PcbMain.Height * ANSWERING_TOP_PER / 100,
+                                width, PcbMain.Height * ANSWERING_HEIGHT_PER / 100);
+                            // 解答ウィンドウを表示
+                            grp.FillRectangle(Brushes.White, rect);
+                            grp.DrawRectangle(Pens.Black, rect);
+                            // 解答文字を表示
+                            grp.DrawString(answer, FtType, Brushes.Black, rect, SfCenter);
+                            // 残り時間を表示
+                            grp.DrawString(restInputTime.ToString(), FtTypeRestTime, Brushes.Black, new Point(rect.Right - ANSWERING_REST_RIGHT_MAR, rect.Top + ANSWERING_REST_TOP_MAR));
+
+                            // 文字入力ボタンを表示
+                            for (int i = 0; i < INPUT_CNT; ++i)
+                            {
+                                var input = InputRect(i);
+                                grp.FillRectangle(Brushes.White, input);
+                                grp.DrawRectangle(Pens.Black, input);
+                                grp.DrawString(InputChar(i), FtInput, Brushes.Black, input, SfCenter);
+                            }
+                        }
+                        break;
+
+                    case State.ST_FASTFORWARD:
+                        // "Q."を描画
+                        grp.DrawString("Q.", FtStatement, Brushes.Black, PtQ);
+                        // 問題文を描画
+                        grp.DrawString(QList.Current.Question.Statement.Substring(0, charCnt),
+                            FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                        break;
+
+                    case State.ST_SHOWANSWER:
+                        // "Q."を描画
+                        grp.DrawString("Q.", FtStatement, Brushes.Black, PtQ);
+                        // 問題文を描画
+                        grp.DrawString(QList.Current.Question.Statement,
+                            FtStatement, Brushes.Black, new Rectangle(PtStatement, new Size(PcbMain.Width - RIGHT_MAR - PtStatement.X, 1000)));
+                        {
+                            // 問題文の高さを計測
+                            int height = (int)grp.MeasureString(QList.Current.Question.Statement, FtStatement, PcbMain.Width - RIGHT_MAR - PtStatement.X).Height;
+                            // 解答を表示
+                            grp.DrawString(QList.Current.Question.Answer, FtAnswer, Brushes.Red,
+                                new Rectangle(0, PtStatement.Y + height + STAANS_Y_MAR, PcbMain.Width - RIGHT_MAR, 1000), SfTopRight);
+                            // 解答の高さを計測
+                            int ans_height = (int)grp.MeasureString(QList.Current.Question.Answer, FtAnswer, PcbMain.Width - RIGHT_MAR).Height;
+                            // 読みを表示
+                            grp.DrawString(QList.Current.Question.Ruby, FtRuby, Brushes.Black,
+                                new Rectangle(0, PtStatement.Y + height + STAANS_Y_MAR + ans_height + ANSRUB_Y_MAR, PcbMain.Width - RIGHT_MAR, 1000), SfTopRight);
+                        }
+                        break;
+                }
+
+                // 正誤を表示
+                if ((State & State.ST_FLG_CORRECT) != 0)
+                {
+                    grp.DrawString("○", FtJudgment, Brushes.Red,
+                        new Rectangle(0, PcbMain.Height * JUDGMENT_Y_PER / 100, PcbMain.Width, 1000), SfTopCenter);
+                }
+                else if ((State & State.ST_FLG_INCORRECT) != 0)
+                {
+                    grp.DrawString("×", FtJudgment, Brushes.Blue,
+                        new Rectangle(0, PcbMain.Height * JUDGMENT_Y_PER / 100, PcbMain.Width, 1000), SfTopCenter);
                 }
             }
-
-            i1 = 0; i2 = 0;
+            PcbMain.Refresh();
         }
 
-        public StudyingList(List<Question> qlist, StudyingList src)
+        private void DrawButton(Graphics grp)
         {
-            // FmMainのQListへの参照を設定しながら、srcをもとに復元
-            int failcnt = 0;
-            QLists = new List<List<QuestionProg>>();
-            foreach (var list in src.QLists)
+            // 早押しボタンを描画
+            grp.DrawImage(btnPressed ? Properties.Resources.button2 : Properties.Resources.button,
+                ButtonRect());
+        }
+
+        public void Proceed()
+        {
+            // Stateを進める
+            switch (State & State.ST_DELETE_FLAGS)
             {
-                var buf = new List<QuestionProg>();
-                foreach (var q in list)
-                {
-                    if (qlist.Count >= q.Question.No &&
-                        qlist[q.Question.No - 1].Statement == q.Question.Statement)
+                case State.ST_START:
+                case State.ST_SHOWANSWER:
+                    State = State.ST_NO;
+                    DrawTimer.Interval = FR_NO;
+                    // 次の問題をロード
+                    if (!QList.NextIndex()) { finished = true; Close(); return; }
+                    break;
+
+                case State.ST_NO:
+                    State = State.ST_QUESTION;
+                    DrawTimer.Interval = FR_CHAR;
+                    charCnt = 0;
+                    break;
+
+                case State.ST_QUESTION:
+                    // 1文字ずつ表示
+                    if (++charCnt > QList.Current.Question.Statement.Length)
                     {
-                        buf.Add(new QuestionProg(qlist[q.Question.No - 1], q.Progress));
-                        ++progress_cnt[Math.Max(q.Progress, 0)];
+                        State = State.ST_WAIT;
+                        DrawTimer.Interval = FRAME;
+                        restThinkingTime = FR_THINKING;
+                    }
+                    break;
+
+                case State.ST_WAIT:
+                    // 思考時間を減らす
+                    restThinkingTime -= FRAME;
+                    if (restThinkingTime <= 0)
+                    {
+                        QList.Incorrect();
+                        State = State.ST_SHOWANSWER;
+                        DrawTimer.Interval = FR_SHOWANSWER;
+                    }
+                    break;
+
+                case State.ST_ANSWER:
+                    // 猶予時間を減らす
+                    if (--restInputTime == 0)
+                    {
+                        QList.Incorrect();
+                        if (PreState == State.ST_QUESTION)
+                        {
+                            State = State.ST_FASTFORWARD | State.ST_FLG_INCORRECT;
+                            DrawTimer.Interval = FR_CHAR_FAST;
+                        }
+                        else
+                        {
+                            State = State.ST_SHOWANSWER | State.ST_FLG_INCORRECT;
+                            DrawTimer.Interval = FR_SHOWANSWER;
+                        }
+                    }
+                    break;
+
+                case State.ST_FASTFORWARD:
+                    // 1文字ずつ表示
+                    if (++charCnt > QList.Current.Question.Statement.Length)
+                    {
+                        State = State.ST_SHOWANSWER | (State & State.ST_FLAGS);
+                        DrawTimer.Interval = FR_SHOWANSWER;
+                    }
+                    break;
+            }
+        }
+
+        // 早押しボタンのクリックイベント
+        private void Button_Click()
+        {
+            DrawTimer.Stop();
+
+            answer = "";
+            SetInputChars();
+            State = State.ST_ANSWER;
+            DrawTimer.Interval = 1000;
+            restInputTime = FR_INPUT;
+
+            Draw();
+            DrawTimer.Start();
+        }
+
+        // 文字入力ボタンのクリックイベント
+        private void Input_Click(int index)
+        {
+            DrawTimer.Stop();
+
+            restInputTime = FR_INPUT;
+            answer += InputChar(index);
+            if (QList.Current.Question.Ruby[answer.Length - 1] == answer[answer.Length - 1])
+            {
+                if (QList.Current.Question.Ruby.Length == answer.Length)
+                {
+                    QList.Correct();
+                    if (PreState == State.ST_QUESTION)
+                    {
+                        State = State.ST_FASTFORWARD | State.ST_FLG_CORRECT;
+                        DrawTimer.Interval = FR_CHAR_FAST;
                     }
                     else
-                        ++failcnt;
+                    {
+                        State = State.ST_SHOWANSWER | State.ST_FLG_CORRECT;
+                        DrawTimer.Interval = FR_SHOWANSWER;
+                    }
                 }
-                QLists.Add(buf);
-            }
-
-            // 2になったら消去されるのでここだけはコピー
-            progress_cnt[2] = src.progress_cnt[2];
-
-            i1 = Math.Min(src.i1, QLists.Count - 1);
-            i2 = Math.Min(src.i2, QLists[i1].Count - 1);
-
-            if (failcnt != 0)
-                MessageBox.Show($"{failcnt}個の問題の復元に失敗しました。", "再開");
-        }
-
-        public void Correct()
-        {
-            if (Current.Progress == -1)
-            {
-                Current.Progress = 2;
-                --progress_cnt[0]; ++progress_cnt[2];
+                else
+                    SetInputChars();
             }
             else
             {
-                --progress_cnt[Current.Progress];
-                ++progress_cnt[++Current.Progress];
-            }
-            ++Current.Question.TrialCount;
-            ++Current.Question.CorrectCount;
-            Current.Question.FinalDate = DateTime.Now;
-
-        }
-
-        public void Incorrect()
-        {
-            --progress_cnt[Math.Max(0, Current.Progress)];
-            ++progress_cnt[Current.Progress = 0];
-
-            ++Current.Question.TrialCount;
-            ++Current.IncorrectCount;
-            Current.Question.FinalDate = DateTime.Now;
-        }
-
-        // If there are no questions to learn, return false
-        public bool NextIndex()
-        {
-            if (!addIndex)
-            {
-                // First state
-                addIndex = true;
-                return true;
-            }
-            if (Current.Progress == 2)
-            {
-                ++Current.Question.LearnCount;
-                QLists[i1].RemoveAt(i2);
-                if (i2 < QLists[i1].Count) return true;
-            }
-            else if (i1 + 1 < QLists.Count && Current.Progress == 1)
-            {
-                // 1回正解したら先送り
-                QLists[i1 + 1].Add(Current);
-                QLists[i1].RemoveAt(i2);
-                if (i2 < QLists[i1].Count) return true;
-                else if (QLists[i1].Count == 0) { ++i1; i2 = 0; return true; }
+                QList.Incorrect();
+                if (PreState == State.ST_QUESTION)
+                {
+                    State = State.ST_FASTFORWARD | State.ST_FLG_INCORRECT;
+                    DrawTimer.Interval = FR_CHAR_FAST;
+                }
                 else
                 {
-                    // Shuffle
-                    QLists[i1] = QLists[i1].OrderBy(i => Guid.NewGuid()).ToList();
-                    i2 = 0;
-                    return true;
+                    State = State.ST_SHOWANSWER | State.ST_FLG_INCORRECT;
+                    DrawTimer.Interval = FR_SHOWANSWER;
                 }
             }
-            else if (i1 + 1 < QLists.Count && QLists[i1].Count == 1 && Current.Progress == 0)
-            {
-                // 連続で同じ問題になるのを避ける
-                QLists[i1 + 1].Add(Current);
-                QLists[i1].RemoveAt(i2);
-                ++i1; i2 = 0;
-                // Shuffle
-                QLists[i1] = QLists[i1].OrderBy(i => Guid.NewGuid()).ToList();
-                return true;
-            }
-            else if (++i2 < QLists[i1].Count) return true;
 
-            if (QLists[i1].Count != 0)
+            Draw();
+            DrawTimer.Start();
+        }
+
+        private void FmQuiz_Resize(object sender, EventArgs e)
+        {
+            // 起動直後はInitializeComponentされていないので後で
+            if (State == State.ST_START) return;
+            PcbMain.Image = new Bitmap(PcbMain.Width, PcbMain.Height);
+            bmp.Dispose();
+            bmp = (Bitmap)PcbMain.Image;
+            Draw();
+        }
+
+        private void DrawTimer_Tick(object sender, EventArgs e)
+        {
+            lock (bmp)
             {
-                i2 = 0;
-                // Shuffle
-                QLists[i1] = QLists[i1].OrderBy(i => Guid.NewGuid()).ToList();
-                return true;
+                DrawTimer.Stop();
+                Proceed();
+                if (bmp == null) return;    // 終了
+                Draw();
+                DrawTimer.Start();
             }
-            else if (++i1 < QLists.Count)
+        }
+
+        private void PcbMain_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            // ボタンクリック判定
+            if (State == State.ST_QUESTION || State == State.ST_WAIT)
             {
-                i2 = 0;
-                return true;
+                if (ButtonRect().Contains(e.Location))
+                {
+                    btnPressed = false;
+                    Button_Click();
+                }
             }
+            // 文字入力ボタンクリック判定
+            else if (State == State.ST_ANSWER)
+            {
+                for (int i = 0; i < INPUT_CNT; ++i)
+                {
+                    if (InputRect(i).Contains(e.Location))
+                    {
+                        Input_Click(i);
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void PcbMain_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            // ボタンプレス判定
+            if (State == State.ST_NO || State == State.ST_QUESTION || State == State.ST_WAIT)
+            {
+                if (ButtonRect().Contains(e.Location))
+                {
+                    btnPressed = true;
+                    Draw();
+                }
+            }
+        }
+
+        private void PcbMain_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            if (State == State.ST_NO || State == State.ST_QUESTION || State == State.ST_WAIT)
+            {
+                // ドラッグしたまま外に出る動きを処理
+                if (btnPressed && !ButtonRect().Contains(e.Location))
+                {
+                    btnPressed = false;
+                    Draw();
+                }
+                // ドラッグしたまま中に入る動きを処理
+                else if (!btnPressed && ButtonRect().Contains(e.Location))
+                {
+                    btnPressed = true;
+                    Draw();
+                }
+            }
+        }
+
+        // ひらがな・カタカナ・アルファベットのリスト
+        private static readonly string Hiragana =
+            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろ" +
+            "わをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ";
+        private static readonly string Katakana =
+            "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロ" +
+            "ワヲンヴガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォッャュョー";
+        private static readonly string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private static readonly string alpha = "abcdefghijklmnopqrstuvwxyz";
+        private static readonly string WIDE_ALPHA = "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ";
+        private static readonly string wide_alpha = "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ";
+        private static readonly string Numbers = "1234567890";
+        private static readonly string WideNumbers = "１２３４５６７８９０";        
+
+        // 現在のanswerをもとに、次の文字入力ボタンの文字を決める
+        private void SetInputChars()
+        {
+            var c = QList.Current.Question.Ruby[answer.Length];
+            inputChars = c.ToString();
+            // 同じ文字種の中からランダムで選ぶ
+            string str = Hiragana;
+            foreach (var i in new string[] { Katakana, ALPHA, alpha, WIDE_ALPHA, wide_alpha, Numbers, WideNumbers, })
+            {
+                if (i.Contains(c))
+                {
+                    str = i;
+                    break;
+                }
+            }
+            // 一文字目に来られない文字
+            if (answer == "")
+                str = Regex.Replace(str, "[をぁぃぅぇぉっゃゅょヲァィゥェォッャュョー]", "");
             else
-                return false;
+            {
+                // 前の文字により候補を制限
+                var pre = QList.Current.Question.Ruby[answer.Length - 1];
+                // 長音記号の連続
+                if (pre == 'ー') str = str.Replace("ー", "");
+                // 同じ母音の連続
+                if ("あいうえおアイウエオ".Contains(pre)) str = str.Replace(pre.ToString(), "");
+                // 小文字の連続/長音記号+小文字
+                if ("ぁぃぅぇぉっゃゅょァィゥェォッャュョー".Contains(pre))
+                    str = Regex.Replace(str, "[ぁぃぅぇぉゃゅょァィゥェォャュョ]", "");
+                // 促音の連続
+                if ("っッ".Contains(pre)) str = Regex.Replace(str, "[っッ]", "");
+                // イ段+[ゃゅょ]
+                if (!"きしちにひみりキシチニヒミリ".Contains(pre))
+                    str = Regex.Replace(str, "[ゃゅょャュョ]", "");
+            }
+            str = str.Replace(c.ToString(), "");
+
+            Random r = new Random();
+            for (int i = 1; i < INPUT_CNT; ++i)
+            {
+                c = str[r.Next(0, str.Length)];
+                inputChars += c;
+                str = str.Replace(c.ToString(), "");
+            }
+
+            // inputCharsをシャッフル
+            var cs = inputChars.ToCharArray();
+            cs = cs.OrderBy(i => Guid.NewGuid()).ToArray();
+            inputChars = new string(cs);
         }
     }
 
+    [Flags]
+    public enum State
+    {
+        ST_START,       // 起動直後
+        ST_NO,          // 問題番号表示中
+        ST_QUESTION,    // 問題文表示中
+        ST_WAIT,        // 問題文表示終了後の待機中
+        ST_ANSWER,      // 解答中
+        ST_FASTFORWARD, // 早送りで問題文表示中
+        ST_SHOWANSWER,  // 解答表示中
+
+        ST_DELETE_FLAGS = (1 << 5) - 1, // フラグ削除用マスク
+        ST_FLAGS = ~ST_DELETE_FLAGS,    // フラグ取り出し用マスク
+
+        ST_FLG_CORRECT = 1 << 5,    // 正解
+        ST_FLG_INCORRECT = 1 << 6,  // 不正解
+    }
 }

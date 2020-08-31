@@ -160,17 +160,26 @@ namespace Quiz
 
         private void BtnStudyAll_Click(object sender, EventArgs e)
         {
-            FmQuiz.Show(QList);
+            if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                FmQuiz.Show(QList);
+            else
+                FmStudy.Show(QList);
         }
 
         private void BtnStudyCurrent_Click(object sender, EventArgs e)
         {
-            FmQuiz.Show(CurrentList);
+            if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                FmQuiz.Show(CurrentList);
+            else
+                FmStudy.Show(CurrentList);
         }
 
         private void BtnStudyFavorite_Click(object sender, EventArgs e)
         {
-            FmQuiz.Show(QList.Where(i => i.Favorite));
+            if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                FmQuiz.Show(QList.Where(i => i.Favorite));
+            else
+                FmStudy.Show(QList.Where(i => i.Favorite));
         }
 
         private void BtnStudySelected_Click(object sender, EventArgs e)
@@ -179,7 +188,49 @@ namespace Quiz
             if (list.Count == 0)
                 MessageBox.Show("選択中の問題がありません。", "中止", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
-                FmQuiz.Show(list);
+            {
+                if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                    FmQuiz.Show(list);
+                else
+                    FmStudy.Show(list);
+            }
+        }
+
+        private void BtnStudyIgnorant_Click(object sender, EventArgs e)
+        {
+            if (QList.Count == 0)
+                FmStudy.Show(QList);
+            else
+            {
+                int min = QList.Min(i => i.LearnCount);
+                if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                    FmQuiz.Show(QList.Where(i => i.LearnCount == min));
+                else
+                    FmStudy.Show(QList.Where(i => i.LearnCount == min));
+            }
+        }
+
+        private void BtnStudyLowRate_Click(object sender, EventArgs e)
+        {
+            if (QList.Count == 0)
+                FmStudy.Show(QList);
+            else
+            {
+                var list = QList.Where(i => i.Rate != 100).OrderBy(i => i.Rate).ToList();
+                if (list.Count > 100) list.RemoveRange(100, list.Count - 100);
+                if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                    FmQuiz.Show(list);
+                else
+                    FmStudy.Show(list);
+            }
+        }
+
+        private void BtnResume_Click(object sender, EventArgs e)
+        {
+            if ((bool)Setting.GetData(Setting.DataType.UseFmQuiz))
+                FmQuiz.ShowResume();
+            else
+                FmStudy.ShowResume();
         }
 
         private void BtnImport_Click(object sender, EventArgs e)
@@ -366,29 +417,6 @@ namespace Quiz
             {
                 StTimer.Stop();
                 LblInfo.Text = "";
-            }
-        }
-
-        private void BtnStudyIgnorant_Click(object sender, EventArgs e)
-        {
-            if (QList.Count == 0)
-                FmQuiz.Show(QList);
-            else
-            {
-                int min = QList.Min(i => i.LearnCount);
-                FmQuiz.Show(QList.Where(i => i.LearnCount == min));
-            }
-        }
-
-        private void BtnStudyLowRate_Click(object sender, EventArgs e)
-        {
-            if (QList.Count == 0)
-                FmQuiz.Show(QList);
-            else
-            {
-                var list = QList.Where(i => i.Rate != 100).OrderBy(i => i.Rate).ToList();
-                if (list.Count > 100) list.RemoveRange(100, list.Count - 100);
-                FmQuiz.Show(list);
             }
         }
 
@@ -748,7 +776,7 @@ namespace Quiz
                             SearchText = TxbSearch.Text.Replace(match.Value, $"%{sort}-%");
                     }
                     else
-                        SearchText += $" %{sort}+%";
+                        SearchText += $" %{sort}{(sort == "No" ? "-" : "+")}%";
                 }
             }
         }
@@ -769,11 +797,6 @@ namespace Quiz
             {
                 DeleteInfoText("個の問題が選択されています。");
             }
-        }
-
-        private void BtnResume_Click(object sender, EventArgs e)
-        {
-            FmQuiz.ShowResume();
         }
 
         private void BtnPaste_Click(object sender, EventArgs e)

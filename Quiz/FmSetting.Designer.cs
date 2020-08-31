@@ -34,11 +34,15 @@
             this.GrpEncoding = new System.Windows.Forms.GroupBox();
             this.RdbSJIS = new System.Windows.Forms.RadioButton();
             this.RdbUTF_8 = new System.Windows.Forms.RadioButton();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.GrpImport = new System.Windows.Forms.GroupBox();
             this.RdbImportReplace = new System.Windows.Forms.RadioButton();
             this.RdbImportAdd = new System.Windows.Forms.RadioButton();
+            this.GrpStudyStyle = new System.Windows.Forms.GroupBox();
+            this.RdbStudyFmStudy = new System.Windows.Forms.RadioButton();
+            this.RdbStudyFmQuiz = new System.Windows.Forms.RadioButton();
             this.GrpEncoding.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.GrpImport.SuspendLayout();
+            this.GrpStudyStyle.SuspendLayout();
             this.SuspendLayout();
             // 
             // BtnCancel
@@ -96,16 +100,16 @@
             this.RdbUTF_8.Text = "UTF-8";
             this.RdbUTF_8.UseVisualStyleBackColor = true;
             // 
-            // groupBox1
+            // GrpImport
             // 
-            this.groupBox1.Controls.Add(this.RdbImportReplace);
-            this.groupBox1.Controls.Add(this.RdbImportAdd);
-            this.groupBox1.Location = new System.Drawing.Point(205, 12);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(199, 116);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "インポート時の動作";
+            this.GrpImport.Controls.Add(this.RdbImportReplace);
+            this.GrpImport.Controls.Add(this.RdbImportAdd);
+            this.GrpImport.Location = new System.Drawing.Point(205, 12);
+            this.GrpImport.Name = "GrpImport";
+            this.GrpImport.Size = new System.Drawing.Size(199, 116);
+            this.GrpImport.TabIndex = 2;
+            this.GrpImport.TabStop = false;
+            this.GrpImport.Text = "インポート時の動作";
             // 
             // RdbImportReplace
             // 
@@ -131,12 +135,48 @@
             this.RdbImportAdd.Text = "追加";
             this.RdbImportAdd.UseVisualStyleBackColor = true;
             // 
+            // GrpStudyStyle
+            // 
+            this.GrpStudyStyle.Controls.Add(this.RdbStudyFmQuiz);
+            this.GrpStudyStyle.Controls.Add(this.RdbStudyFmStudy);
+            this.GrpStudyStyle.Location = new System.Drawing.Point(12, 149);
+            this.GrpStudyStyle.Name = "GrpStudyStyle";
+            this.GrpStudyStyle.Size = new System.Drawing.Size(199, 116);
+            this.GrpStudyStyle.TabIndex = 3;
+            this.GrpStudyStyle.TabStop = false;
+            this.GrpStudyStyle.Text = "学習方法";
+            // 
+            // RdbStudyFmStudy
+            // 
+            this.RdbStudyFmStudy.AutoSize = true;
+            this.RdbStudyFmStudy.Font = new System.Drawing.Font("游ゴシック", 10F);
+            this.RdbStudyFmStudy.Location = new System.Drawing.Point(24, 34);
+            this.RdbStudyFmStudy.Name = "RdbStudyFmStudy";
+            this.RdbStudyFmStudy.Size = new System.Drawing.Size(117, 30);
+            this.RdbStudyFmStudy.TabIndex = 1;
+            this.RdbStudyFmStudy.TabStop = true;
+            this.RdbStudyFmStudy.Text = "演習形式";
+            this.RdbStudyFmStudy.UseVisualStyleBackColor = true;
+            // 
+            // RdbStudyFmQuiz
+            // 
+            this.RdbStudyFmQuiz.AutoSize = true;
+            this.RdbStudyFmQuiz.Font = new System.Drawing.Font("游ゴシック", 10F);
+            this.RdbStudyFmQuiz.Location = new System.Drawing.Point(24, 70);
+            this.RdbStudyFmQuiz.Name = "RdbStudyFmQuiz";
+            this.RdbStudyFmQuiz.Size = new System.Drawing.Size(117, 30);
+            this.RdbStudyFmQuiz.TabIndex = 1;
+            this.RdbStudyFmQuiz.TabStop = true;
+            this.RdbStudyFmQuiz.Text = "実践形式";
+            this.RdbStudyFmQuiz.UseVisualStyleBackColor = true;
+            // 
             // FmSetting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.GrpStudyStyle);
+            this.Controls.Add(this.GrpImport);
             this.Controls.Add(this.GrpEncoding);
             this.Controls.Add(this.BtnOK);
             this.Controls.Add(this.BtnCancel);
@@ -148,8 +188,10 @@
             this.Shown += new System.EventHandler(this.FmSetting_Shown);
             this.GrpEncoding.ResumeLayout(false);
             this.GrpEncoding.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.GrpImport.ResumeLayout(false);
+            this.GrpImport.PerformLayout();
+            this.GrpStudyStyle.ResumeLayout(false);
+            this.GrpStudyStyle.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -161,8 +203,11 @@
         private System.Windows.Forms.GroupBox GrpEncoding;
         private System.Windows.Forms.RadioButton RdbSJIS;
         private System.Windows.Forms.RadioButton RdbUTF_8;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox GrpImport;
         private System.Windows.Forms.RadioButton RdbImportReplace;
         private System.Windows.Forms.RadioButton RdbImportAdd;
+        private System.Windows.Forms.GroupBox GrpStudyStyle;
+        private System.Windows.Forms.RadioButton RdbStudyFmQuiz;
+        private System.Windows.Forms.RadioButton RdbStudyFmStudy;
     }
 }

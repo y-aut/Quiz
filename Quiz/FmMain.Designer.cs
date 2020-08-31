@@ -42,6 +42,7 @@
             this.BtnExport = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnExportQList = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnExportCurrentList = new System.Windows.Forms.ToolStripMenuItem();
+            this.BtnPaste = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.BtnClose = new System.Windows.Forms.ToolStripMenuItem();
             this.BtnCloseWithoutSaving = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +75,6 @@
             this.LblInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.StTimer = new System.Windows.Forms.Timer(this.components);
             this.DeleteTimer = new System.Windows.Forms.Timer(this.components);
-            this.BtnPaste = new System.Windows.Forms.ToolStripMenuItem();
             this.ClmStatement = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ClmAnswer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ClmRuby = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -225,6 +225,14 @@
             this.BtnExportCurrentList.Size = new System.Drawing.Size(312, 34);
             this.BtnExportCurrentList.Text = "現在のリスト";
             this.BtnExportCurrentList.Click += new System.EventHandler(this.BtnExportCurrentList_Click);
+            // 
+            // BtnPaste
+            // 
+            this.BtnPaste.Name = "BtnPaste";
+            this.BtnPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.BtnPaste.Size = new System.Drawing.Size(340, 34);
+            this.BtnPaste.Text = "貼り付け";
+            this.BtnPaste.Click += new System.EventHandler(this.BtnPaste_Click);
             // 
             // toolStripSeparator2
             // 
@@ -472,14 +480,6 @@
             // DeleteTimer
             // 
             this.DeleteTimer.Tick += new System.EventHandler(this.DeleteTimer_Tick);
-            // 
-            // BtnPaste
-            // 
-            this.BtnPaste.Name = "BtnPaste";
-            this.BtnPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
-            this.BtnPaste.Size = new System.Drawing.Size(340, 34);
-            this.BtnPaste.Text = "貼り付け";
-            this.BtnPaste.Click += new System.EventHandler(this.BtnPaste_Click);
             // 
             // ClmStatement
             // 
